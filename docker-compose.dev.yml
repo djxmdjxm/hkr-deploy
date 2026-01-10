@@ -1,0 +1,150 @@
+name: hkr
+services:
+  krebs-code:
+    build:
+      context: ./code-server
+      dockerfile: Dockerfile
+      args:
+        - SUDO_PASSWORD=123456
+        - USER_PASSWORD=1234
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://0.0.0.0:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    container_name: krebs-code
+    ports:
+      - "8081:8080"
+    networks:
+      - krebs-net
+    restart: unless-stopped
+  job-queue:
+    build:
+      context: ./job-queue
+      dockerfile: Dockerfile
+    pull_policy: never
+    container_name: job-queue
+    networks:
+      - krebs-net
+  krebs-db-migrations:
+    build:
+      context: ../krebs-db-migrations
+      dockerfile: Dockerfile
+    restart: no
+    pull_policy: never
+    container_name: krebs-db-migrations
+    volumes:
+      - ../krebs-db-migrations:/app
+    networks:
+      - krebs-net
+    depends_on:
+      central-db:
+        condition: service_healthy
+    environment:
+      KREBS_DB_CONNECTION: postgresql://postgres:1234@central-db/krebs
+  main-db-migrations:
+    build:
+      context: ../main-db-migrations
+      dockerfile: Dockerfile
+    restart: no
+    pull_policy: never
+    container_name: main-db-migrations
+    volumes:
+      - ../main-db-migrations:/app
+    networks:
+      - krebs-net
+    depends_on:
+      central-db:
+        condition: service_healthy
+    environment:
+      MAIN_DB_CONNECTION: postgresql://postgres:1234@central-db/main
+  central-db:
+    build:
+      context: ./central-db
+      dockerfile: Dockerfile
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d main || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    pull_policy: never
+    container_name: central-db
+    networks:
+      - krebs-net
+    volumes:
+      - krebs-db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+  import-worker:
+    build:
+      context: ../import-worker
+      dockerfile: Dockerfile.dev
+    pull_policy: never
+    container_name: import-worker
+    volumes:
+      - ../import-worker:/app
+    networks:
+      - krebs-net
+    depends_on:
+      - central-db
+      - job-queue
+    environment:
+      JOB_QUEUE_NAME: import-queue
+      JOB_QUEUE_CONNECTION: redis://:1234@job-queue:6379
+      MAIN_DB_CONNECTION: postgresql://postgres:1234@central-db/main
+      KREBS_DB_CONNECTION: postgresql://postgres:1234@central-db/krebs
+  krebs-api:
+    build:
+      context: ../krebs-api
+      dockerfile: Dockerfile.dev
+    pull_policy: never
+    container_name: krebs-api
+    volumes:
+      - ../krebs-api:/app
+    networks:
+      - krebs-net
+    depends_on:
+      - central-db
+      - job-queue
+    environment:
+      JOB_QUEUE_NAME: import-queue
+      JOB_QUEUE_CONNECTION: redis://:1234@job-queue:6379
+      MAIN_DB_CONNECTION: postgresql://postgres:1234@central-db/main
+      KREBS_DB_CONNECTION: postgresql://postgres:1234@central-db/krebs
+  krebs-web:
+    build:
+      context: ../krebs-web
+      dockerfile: Dockerfile.dev
+    pull_policy: never
+    container_name: krebs-web
+    volumes:
+      - ../krebs-web:/app
+      - /app/node_modules
+    networks:
+      - krebs-net
+    depends_on:
+      - krebs-api
+    environment:
+      - PORT=8080
+  ingress:
+    build:
+      context: ./ingress
+      dockerfile: Dockerfile
+    pull_policy: never
+    container_name: ingress
+    networks:
+      - krebs-net
+    ports:
+      - "8080:80"
+    depends_on:
+      - krebs-api
+      - krebs-web
+networks:
+  krebs-net:
+    name: "krebs-net"
+volumes:
+  krebs-db:
+    name: "krebs-db"

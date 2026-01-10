@@ -1,0 +1,114 @@
+name: hkr
+services:
+  krebs-code:
+    image: hkr/krebs-code:latest
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://0.0.0.0:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    container_name: krebs-code
+    ports:
+      - "8091:8080"
+    networks:
+      - krebs-net
+    restart: unless-stopped
+  job-queue:
+    image: hkr/job-queue:latest
+    pull_policy: never
+    container_name: job-queue
+    networks:
+      - krebs-net
+  krebs-db-migrations:
+    image: hkr/krebs-db-migrations:latest
+    restart: no
+    pull_policy: never
+    container_name: krebs-db-migrations
+    networks:
+      - krebs-net
+    depends_on:
+      central-db:
+        condition: service_healthy
+    environment:
+      KREBS_DB_CONNECTION: postgresql://postgres:1234@central-db/krebs
+  main-db-migrations:
+    image: hkr/main-db-migrations:latest
+    restart: no
+    pull_policy: never
+    container_name: main-db-migrations
+    networks:
+      - krebs-net
+    depends_on:
+      central-db:
+        condition: service_healthy
+    environment:
+      MAIN_DB_CONNECTION: postgresql://postgres:1234@central-db/main
+  central-db:
+    image: hkr/central-db:latest
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d main || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    pull_policy: never
+    container_name: central-db
+    networks:
+      - krebs-net
+    volumes:
+      - krebs-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+  import-worker:
+    image: hkr/import-worker:latest
+    pull_policy: never
+    container_name: import-worker
+    networks:
+      - krebs-net
+    depends_on:
+      - central-db
+      - job-queue
+    environment:
+      JOB_QUEUE_NAME: import-queue
+      JOB_QUEUE_CONNECTION: redis://:1234@job-queue:6379
+      MAIN_DB_CONNECTION: postgresql://postgres:1234@central-db/main
+      KREBS_DB_CONNECTION: postgresql://postgres:1234@central-db/krebs
+  krebs-api:
+    image: hkr/krebs-api:latest
+    pull_policy: never
+    container_name: krebs-api
+    networks:
+      - krebs-net
+    depends_on:
+      - central-db
+      - job-queue
+    environment:
+      JOB_QUEUE_NAME: import-queue
+      JOB_QUEUE_CONNECTION: redis://:1234@job-queue:6379
+      MAIN_DB_CONNECTION: postgresql://postgres:1234@central-db/main
+      KREBS_DB_CONNECTION: postgresql://postgres:1234@central-db/krebs
+  krebs-web:
+    image: hkr/krebs-web:latest
+    pull_policy: never
+    container_name: krebs-web
+    networks:
+      - krebs-net
+    depends_on:
+      - krebs-api
+  ingress:
+    image: hkr/ingress:latest
+    pull_policy: never
+    container_name: ingress
+    networks:
+      - krebs-net
+    ports:
+      - "8090:80"
+    depends_on:
+      - krebs-api
+      - krebs-web
+networks:
+  krebs-net:
+    name: "krebs-net"
+volumes:
+  krebs-db:
+    name: "krebs-db"
