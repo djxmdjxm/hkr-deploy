@@ -86,6 +86,7 @@ services:
     container_name: import-worker
     volumes:
       - ../import-worker:/app
+      - xml-uploads:/data/uploads
     networks:
       - krebs-net
     depends_on:
@@ -104,6 +105,7 @@ services:
     container_name: krebs-api
     volumes:
       - ../krebs-api:/app
+      - xml-uploads:/data/uploads
     networks:
       - krebs-net
     depends_on:
@@ -148,3 +150,5 @@ networks:
 volumes:
   krebs-db:
     name: "krebs-db"
+  xml-uploads:
+    name: "xml-uploads"
