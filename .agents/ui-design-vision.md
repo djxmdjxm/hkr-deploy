@@ -1,6 +1,7 @@
 # KIKA UI Design Vision
 
 *Erstellt: 2026-04-15 — Grundlage: Frühstücksgespräch Annemarie + Christopher*
+*Farben verifiziert: hamburg.de CSS-Analyse 2026-04-15*
 
 ---
 
@@ -17,21 +18,41 @@ Das System muss ohne Schulung verständlich sein.
 ## Stil: „Trusted Government Tool"
 
 Nicht steril-bürokratisch, nicht verspielt.
-Orientierung: moderne Behörden-Portale oder medizinische SaaS-Tools.
+Orientierung: modernes Behörden-Portal im Hamburg Corporate Design.
+„Ein Tick schicker als hamburg.de" — gleiche Farben, mehr Luft, wärmere Ecken.
 
-### Farben
-- Weißer Hintergrund
-- Eine ruhige Primärfarbe (tiefes Blau oder Teal — noch zu finalisieren)
-- Akzentfarbe nur für CTAs, Erfolg- und Fehlerzustände
+---
 
-### Typografie
-- Klare Sans-Serif
+## Farben — Hamburg Corporate Design
+
+Exakte Werte aus hamburg.de CSS-Analyse:
+
+| Token | Hex | Verwendung |
+|-------|-----|-----------|
+| Primary Navy | `#003063` | Header, Stepper aktiv, Buttons |
+| Deep Navy | `#002853` | Hover-Zustand, dunkle Akzente |
+| Interactive Blue | `#0B70C8` | Links, sekundäre Buttons |
+| Hamburg Rot | `#E10019` | Fehler-Zustand — sparsam |
+| Background | `#F2F5F7` | Seitenhintergrund |
+| Surface | `#FFFFFF` | Cards, Modals, Upload-Zone |
+| Text primary | `#000000` | Fließtext |
+| Text secondary | `#505050` | Metadaten, Labels |
+| Text on Navy | `#FFFFFF` | Text auf blauem Hintergrund |
+| Border | `#D8D8D8` | Trennlinien, Card-Rahmen |
+
+**Unterschied zu hamburg.de:**
+- Cards: `border-radius: 8px` + leichter `box-shadow` (hamburg.de: 0px, flach)
+- Mehr Weißraum zwischen Elementen
+- Tiefe durch Schatten, nicht durch Farbe
+
+---
+
+## Typografie
+
+- **Lato** (wie hamburg.de) — Weights 300/400/600/700
+- Fallback: `Arial, Helvetica, sans-serif`
 - Großzügige Schriftgrößen — kein Kleingedrucktes
-- Alle Texte ohne Fachbegriff-Kenntnisse lesbar
-
-### Responsive
-- Vollständig responsive
-- Optimiert für Desktop-Monitore in Behörden (1280px+)
+- Alle Texte ohne Fachbegriffs-Kenntnisse lesbar
 
 ---
 
@@ -45,8 +66,9 @@ Prominent oben: ein **horizontaler Stepper** mit den 4 Prozessschritten:
 [ 1. Upload ] → [ 2. Validierung ] → [ 3. Import ] → [ 4. Analyse ]
 ```
 
-- Aktueller Schritt: aktiv/farbig hervorgehoben
-- Künftige Schritte: ausgegraut
+- Aktueller Schritt: Navy (#003063), aktiv hervorgehoben
+- Künftige Schritte: ausgegraut (#D8D8D8)
+- Fehler-Zustand: Rot (#E10019)
 - Nutzer sieht auf einen Blick: wo bin ich, was kommt als nächstes
 
 Darunter: kurze Erklärung des Gesamtzwecks in 2–3 Sätzen.
@@ -66,8 +88,8 @@ Darunter: kurze Erklärung des Gesamtzwecks in 2–3 Sätzen.
 
 Während des Uploads (1 MB-Chunks, bereits im Backend implementiert):
 
-- Sauberer **Fortschrittsbalken** mit Prozentangabe
-- MB-Zähler: „4,2 MB von 18,7 MB hochgeladen"
+- Sauberer **Fortschrittsbalken** in Navy (#003063)
+- Prozentangabe + MB-Zähler: „4,2 MB von 18,7 MB hochgeladen"
 - Kein Spinner ohne Information — der Nutzer sieht immer was passiert
 
 ---
@@ -80,7 +102,7 @@ Nach dem Upload: sofortige Rückmeldung ob die XML-Datei schema-konform ist.
 - Grünes Häkchen, kurze Bestätigung: „Datei ist gültig. Import wird gestartet."
 
 **Fehler:**
-- Rotes Icon
+- Rotes Icon (#E10019)
 - **Menschlich lesbare Fehlermeldung** (kein roher Stacktrace)
 - Klare Handlungsempfehlung: „Was bedeutet das? Was tun?"
 - Beispiel: „Die Datei enthält ein unbekanntes Feld in Zeile 142. Bitte prüfen Sie, ob die richtige Schema-Version ausgewählt ist."
@@ -89,7 +111,7 @@ Nach dem Upload: sofortige Rückmeldung ob die XML-Datei schema-konform ist.
 
 ### 5. Import-Ergebnis / Kennzahlen-Dashboard
 
-Nach erfolgreichem Import: **3–4 Kennzahlen-Cards** (große Kacheln, Icon + Zahl):
+Nach erfolgreichem Import: **4 Kennzahlen-Cards** (große Kacheln, Icon + Zahl):
 
 | Card | Inhalt | Beispiel |
 |------|--------|---------|
@@ -108,16 +130,24 @@ Zweck: Nutzer erkennt sofort ob er die richtige Datei hochgeladen hat.
 |-------------|-------|-----------|
 | Next.js 15 + React 19 | Framework | Bereits vorhanden, state of the art |
 | TypeScript | Typsicherheit | Pflicht für Produktivbetrieb |
-| Tailwind CSS v4 | Styling | Responsive, konsistent, kein CSS-Chaos |
-| shadcn/ui | UI-Komponenten | Barrierefrei, air-gap-fähig (kein CDN), professionell |
+| Tailwind CSS v4 | Styling | Responsive, konsistent |
+| shadcn/ui | UI-Komponenten | Barrierefrei, air-gap-fähig, professionell |
 | Lucide React | Icons | Minimalistisch, gut lesbar |
+| Lato | Schrift | Konsistent mit Hamburg Corporate Design |
 
-**Air-gap-Kompatibilität:** Next.js baut zu statischen Assets / Node-Bundle — kein CDN nötig, funktioniert in der geschlossenen HKR-Umgebung.
+**Air-gap-Kompatibilität:** Lato wird lokal eingebunden (kein Google Fonts CDN).
+
+---
+
+## Responsive
+
+- Vollständig responsive
+- Optimiert für Desktop (1280px+) in Behörden
+- Mobile: funktional, aber nicht primärer Use-Case
 
 ---
 
 ## Offene Punkte
 
-- [ ] Finale Primärfarbe (Blau vs. Teal) — Referenz-Screenshot von Annemarie/Christopher?
 - [ ] Analyse-Container (R/Python, code-server): Zugänglich für alle Nutzer oder nur Statistiker?
-- [ ] Navigation: Braucht es eine Sidebar oder reicht der Stepper?
+- [ ] Navigation: Braucht es eine Sidebar für spätere Erweiterungen?
