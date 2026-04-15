@@ -14,8 +14,11 @@ in einer air-gapped Docker-Umgebung auf einem Linux-Server im HKR-Intranet.
 | # | Feature | Status | Anmerkungen |
 |---|---------|--------|-------------|
 | F1 | cTNM-Bug-Fix (Crash bei fehlendem cTNM) | ✅ Done | pTNM ohne cTNM wird korrekt verarbeitet |
-| F2 | Schema-Versionsauswahl (Multi-XSD) | 📋 Planned | Beschreibung s.u. |
+| F2 | Schema-Versionsauswahl (Multi-XSD) | 📋 Planned | Dropdown fuer beide XSD-Versionen |
 | F3 | Streaming-Upload via Docker Volume | ✅ Done | Kein base64 mehr, kein Timeout |
+| F5 | Willkommensseite mit Prozess-Stepper | 📋 Planned | Hamburg CD, 4 Schritte |
+| F6 | Upload-Fortschrittsanzeige (Rote Rose) | 📋 Planned | Animierte SVG-Rose |
+| F7 | Ergebnis-Dashboard (Kennzahlen-Cards) | 📋 Planned | 4 Kacheln nach Import |
 | F4 | Schema 3.0.4_RKI einbinden | ✅ Done | Neue XSD von HKR, April 2024 |
 
 ---
@@ -137,3 +140,89 @@ Die neue XSD ist abwärtskompatibel für die im HKR vorhandenen Bestandsdaten.
 ---
 
 *Erstellt: 2026-04-15 | Autor: Christopher Mangels / Claude Code (oikos-dev)*
+
+---
+
+## Feature 5: Willkommensseite mit Prozess-Stepper 📋
+
+### Situation
+Das aktuelle Frontend zeigt sofort die Upload-Seite ohne Kontext. Neue Nutzer
+wissen nicht, was als nächstes kommt oder wo sie im Prozess stehen.
+
+### Complication
+Nicht-technikaffine Registerbenutzer brauchen eine klare Orientierung:
+Was muss ich tun? Was passiert nach dem Upload? Bin ich fertig?
+
+### Question
+**Wie geben wir dem Nutzer einen sofortigen Überblick über den Gesamtprozess
+und zeigen transparent, in welchem Schritt er sich befindet?**
+
+### Geplante Implementierung
+- Horizontaler Stepper oben: Upload → Validierung → Import → Ergebnis
+- Aktiver Schritt: Navy #003063, inaktiv: #D8D8D8, Fehler: #E10019
+- Willkommens-Headline mit kurzer Prozessbeschreibung
+- Hamburg Corporate Design (Lato, Navy/Rot/Grau)
+
+### Acceptance Criteria
+- [ ] Stepper sichtbar auf allen Upload-Seiten
+- [ ] Aktiver Schritt klar erkennbar
+- [ ] Verstaendlich ohne IT-Kenntnisse
+
+---
+
+## Feature 6: Upload-Fortschrittsanzeige (Animierte rote Rose) 📋
+
+### Situation
+Beim Upload großer XML-Dateien (bis 200 MB) gibt es kein visuelles Feedback.
+Der Nutzer sieht eine leere Seite und weiß nicht ob etwas passiert.
+
+### Complication
+Ein klassischer Ladebalken ist funktional aber uninspirierend. KIKA soll sich
+als modernes, einladendes System anfuehlen.
+
+### Question
+**Wie zeigen wir den Upload-Fortschritt auf eine Art, die informativ ist
+und gleichzeitig den Charakter des Systems unterstreicht?**
+
+### Geplante Implementierung
+- Animierte SVG-Rose waechst mit dem Upload-Fortschritt (0–100%)
+- Farbe: Hamburg-Rot #E10019 (Blume), Gruen (Stiel/Blaetter)
+- Technik: stroke-dasharray/stroke-dashoffset, gesteuert durch XHR-Progress
+- Zusaetzlich: MB-Zaehler als Text (4,2 MB von 18,7 MB)
+- Bei 100%: Rose vollstaendig geoeffnet, Animation haelt an
+
+### Acceptance Criteria
+- [ ] Rose waechst sichtbar mit dem Fortschritt
+- [ ] MB-Zaehler aktualisiert sich in Echtzeit
+- [ ] Funktioniert bei Dateien bis 200 MB ohne Timeout
+
+---
+
+## Feature 7: Ergebnis-Dashboard (Kennzahlen-Cards) 📋
+
+### Situation
+Nach erfolgreichem Import sieht der Nutzer nur eine Erfolgsmeldung.
+Es gibt keine Zusammenfassung was importiert wurde.
+
+### Complication
+Der Nutzer muss manuell pruefen ob er die richtige Datei hochgeladen hat
+und wie viele Datensaetze verarbeitet wurden.
+
+### Question
+**Wie zeigen wir dem Nutzer nach dem Import auf einen Blick, was importiert
+wurde und ob alles korrekt ist?**
+
+### Geplante Implementierung
+- 4 grosse Kennzahlen-Kacheln (Icon + Zahl):
+  - Anzahl Patienten
+  - Anzahl Tumormeldungen
+  - Diagnosejahre (z.B. 2014–2023)
+  - Validierungsstatus (Fehler / Warnungen)
+- Hamburg CD: Navy-Header, weisse Cards mit leichtem Schatten
+- Sofort erkennbar wie ein Dashboard
+
+### Acceptance Criteria
+- [ ] 4 Kennzahlen-Cards nach erfolgreichem Import sichtbar
+- [ ] Daten stammen aus der tatsaechlich importierten Datei
+- [ ] Verstaendlich ohne Erklaerung
+
