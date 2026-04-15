@@ -198,31 +198,80 @@ und gleichzeitig den Charakter des Systems unterstreicht?**
 
 ---
 
-## Feature 7: Ergebnis-Dashboard (Kennzahlen-Cards) 📋
+## Feature 7: Importbericht (Kennzahlen-Cards nach Import) 📋
 
 ### Situation
 Nach erfolgreichem Import sieht der Nutzer nur eine Erfolgsmeldung.
 Es gibt keine Zusammenfassung was importiert wurde.
 
 ### Complication
-Der Nutzer muss manuell pruefen ob er die richtige Datei hochgeladen hat
-und wie viele Datensaetze verarbeitet wurden.
+Der Nutzer muss manuell pruefen ob er die richtige Datei hochgeladen hat,
+ob die Fallzahlen plausibel sind und ob die Daten in die R-Umgebung
+uebernommen wurden.
 
 ### Question
-**Wie zeigen wir dem Nutzer nach dem Import auf einen Blick, was importiert
-wurde und ob alles korrekt ist?**
+**Wie zeigen wir dem Nutzer nach dem Import auf einen Blick die wichtigsten
+Kennzahlen — und leiten ihn nahtlos in die R-Umgebung weiter?**
+
+### Konzept (besprochen 2026-04-15)
+Die Ergebnisseite (Schritt 4) heisst "Importbericht" und zeigt:
+
+**Kennzahlen-Cards (3-4 Kacheln, Icon + Zahl):**
+- Anzahl importierter Patienten
+- Diagnosejahre (z.B. 2019–2024)
+- Medianes Alter (+ Min/Max)
+- Anzahl Tumormeldungen
+
+**Zweck:** Der Nutzer erkennt sofort ob die richtigen Daten importiert wurden
+und ob die Zahlen realistisch sind — ohne die R-Umgebung oeffnen zu muessen.
+
+**R-Umgebung Button:**
+- Prominenter Navy-Button: "Daten in R-Umgebung analysieren"
+- Direkt-Link auf http://192.168.2.7:8081/
+- Erklaerung: "Die importierten Daten stehen jetzt in der R-Umgebung bereit."
+
+**Datenquelle:** API-Endpoint der die Kennzahlen aus der DB abfragt
+(COUNT patients, MIN/MAX/MEDIAN age, MIN/MAX diagnosis year) — bezogen
+auf die zuletzt importierte Batch-ID oder den letzten Import-Zeitstempel.
 
 ### Geplante Implementierung
-- 4 grosse Kennzahlen-Kacheln (Icon + Zahl):
-  - Anzahl Patienten
-  - Anzahl Tumormeldungen
-  - Diagnosejahre (z.B. 2014–2023)
-  - Validierungsstatus (Fehler / Warnungen)
-- Hamburg CD: Navy-Header, weisse Cards mit leichtem Schatten
-- Sofort erkennbar wie ein Dashboard
+1. Neuer API-Endpoint: GET /api/report/summary -> { patients, years, median_age, ... }
+2. Neue Seite: /result (oder Ergebnis-State in UploadSection)
+3. KennzahlenCard-Komponente: Icon + grosse Zahl + Label
+4. "In R-Umgebung analysieren" Button prominent platziert
 
 ### Acceptance Criteria
-- [ ] 4 Kennzahlen-Cards nach erfolgreichem Import sichtbar
-- [ ] Daten stammen aus der tatsaechlich importierten Datei
-- [ ] Verstaendlich ohne Erklaerung
+- [ ] 3-4 Kennzahlen-Cards mit echten Daten aus der DB
+- [ ] Medianes Alter, Min/Max sichtbar
+- [ ] Diagnosejahre-Spanne sichtbar
+- [ ] "R-Umgebung" Button prominent und funktional
+- [ ] Verstaendlich ohne IT-Kenntnisse
 
+
+
+---
+
+## Feature 8: Datei-Dialog-Fix (Drop-Zone Klick) 📋
+
+### Situation
+Die Upload-Zone zeigt "XML-Datei hier ablegen oder klicken".
+Klicken oeffnet aber keinen Datei-Oeffnen-Dialog.
+
+### Complication
+Nutzer ohne Drag-and-Drop-Erfahrung (typisch in Behoerden) erwarten,
+dass ein Klick auf die Zone den System-Dateidialog oeffnet.
+Das ist aktuell nicht zuverlaessig.
+
+### Ursache
+Das versteckte input[type=file] wird durch das Label-Click-Event
+nicht korrekt ausgeloest, weil das Label interaktive Kindelemente
+enthaelt (DragOver/DragLeave Handler).
+
+### Fix
+useRef auf das input-Element, expliziter inputRef.current.click()
+im onClick-Handler der Zone statt implizitem Label-for-Binding.
+
+### Acceptance Criteria
+- [ ] Klick irgendwo in die Drop-Zone oeffnet den System-Dateidialog
+- [ ] Drag and Drop funktioniert weiterhin
+- [ ] Funktioniert in Chrome, Firefox und Edge
