@@ -220,6 +220,131 @@ docker compose -f docker-compose.prd.yml up -d
 
 ---
 
+
+---
+
+## Paket erstellen (Air-Gap / geschützte Umgebung)
+
+Wenn KIKA in einer Umgebung ohne Internetzugang betrieben werden soll (z. B. im
+Krankenhaus-Intranet), muss vorab ein transportables Paket gebaut werden.
+
+### Voraussetzungen auf dem Build-Server
+
+- Alle Repos im selben Elternverzeichnis geklont (siehe [Verzeichnisstruktur](#verzeichnisstruktur))
+- Zusätzlich die Migrationsrepos klonen:
+
+```bash
+git clone https://github.com/ihor-zhvanko/hkr-krebs-db-migrations.git krebs-db-migrations
+git clone https://github.com/ihor-zhvanko/hkr-main-db-migrations.git main-db-migrations
+```
+
+- Mindestens **8 GB freier RAM** während des Builds
+- Mindestens **10 GB freier Speicherplatz** für das fertige Paket
+- `zstd` installiert (empfohlen): `sudo apt install zstd`
+
+### Paket bauen
+
+```bash
+cd hkr-deploy
+bash deploy-all.sh
+```
+
+Das Script:
+1. Baut alle Docker-Images neu (~10-15 Minuten)
+2. Speichert alle Images in `../kika/amd64/hkr-images.tar.zst`
+3. Kopiert `run-all.sh`, `clear-all.sh` und `docker-compose.yml` nach `../kika/`
+4. Räumt die lokalen Images auf
+
+### Ergebnis
+
+Nach dem Durchlauf liegt in `../kika/` folgendes bereit:
+
+```
+kika/
+├── amd64/
+│   └── hkr-images.tar.zst   # Alle Docker-Images (~3-6 GB)
+├── docker-compose.yml        # Produktiv-Konfiguration
+├── run-all.sh                # Startscript für Zielserver
+└── clear-all.sh              # Deinstallationsscript
+```
+
+Dieses Verzeichnis auf einem USB-Stick oder per gesicherter Dateiübertragung
+auf den Zielserver übertragen.
+
+---
+
+## Installation auf dem Zielserver (Air-Gap)
+
+### Voraussetzungen auf dem Zielserver
+
+- Linux (Ubuntu 22.04 LTS empfohlen)
+- Docker >= 24.0 installiert (siehe [Voraussetzungen](#voraussetzungen))
+- `zstd` installiert: `sudo apt install zstd`
+- Mindestens **8 GB RAM**, **10 GB freier Speicherplatz**
+
+### Schritt 1: Dateien übertragen
+
+Das `kika/`-Verzeichnis auf den Zielserver kopieren, z. B.:
+
+```bash
+# Per USB-Stick: Verzeichnis auf den Server kopieren
+cp -r /mnt/usb/kika/ /opt/kika/
+
+# Per SCP (falls SSH-Zugang besteht):
+scp -r kika/ user@zielserver:/opt/kika/
+```
+
+### Schritt 2: Umgebungsvariable setzen
+
+```bash
+cd /opt/kika
+
+# docker-compose.yml öffnen und NEXT_PUBLIC_CODE_SERVER_URL anpassen:
+nano docker-compose.yml
+```
+
+Den Wert `NEXT_PUBLIC_CODE_SERVER_URL` auf die IP-Adresse des Zielservers setzen:
+
+```yaml
+environment:
+  - NEXT_PUBLIC_CODE_SERVER_URL=http://IP-DES-ZIELSERVERS:8091
+```
+
+### Schritt 3: Stack starten
+
+```bash
+cd /opt/kika
+bash run-all.sh
+```
+
+Das Script:
+1. Entpackt `hkr-images.tar.zst` automatisch
+2. Lädt alle Images in Docker
+3. Startet den Stack mit `docker compose up -d`
+
+### Schritt 4: Anwendung öffnen
+
+```
+http://IP-DES-ZIELSERVERS:8090
+```
+
+Die R-Umgebung (VS Code) ist erreichbar unter:
+```
+http://IP-DES-ZIELSERVERS:8091
+```
+
+### Deinstallation
+
+```bash
+cd /opt/kika
+bash clear-all.sh
+```
+
+Stoppt alle Container, entfernt Images und die Datenbank-Volumes.
+**Achtung: Alle importierten Daten gehen dabei verloren.**
+
+---
+
 ## Häufige Probleme
 
 ### Stack startet nicht — "port already in use"
