@@ -313,7 +313,25 @@ Das Frontend zeigt einen generischen Fehler ohne Details.
 - import-worker: Exception-Text (XSD-Fehlermeldung) in  schreiben
 - Frontend:  aus  auslesen und im Fehler-Banner darstellen
 
+**Technischer Ansatz:**
+- import-worker: lxml-Exception-Text in `additional_info` speichern
+- import-worker: Fehlertyp regelbasiert kategorisieren (kein KI) — `if/elif` auf Schlüsselwörter
+- Frontend: technische Fehlermeldung anzeigen (für IT/Admin)
+- Frontend: kategorisierten Handlungshinweis anzeigen (für Mediziner ohne Technik-Hintergrund)
+
+**Fehlerkategorien (regelbasiert):**
+
+| Schlüsselwort in lxml-Fehler | Angezeigter Hinweis |
+|------------------------------|---------------------|
+| `not expected` / `not allowed` | "Bitte prüfen Sie, ob die richtige Schema-Version (z. B. 3.0.4) im Dropdown ausgewählt ist." |
+| `not facet-valid` / `enumeration` | "Ein Codierwert in der Datei ist ungültig. Bitte prüfen Sie die betroffene Stelle in der Quelldatei." |
+| `not complete` / `missing` | "Ein Pflichtfeld fehlt in der Datei. Bitte prüfen Sie die Vollständigkeit des Meldebogens." |
+| `pattern-valid` / `pattern` | "Ein Feld hat das falsche Format (z. B. Datum). Erwartet wird meist JJJJ-MM-TT." |
+| `namespace` | "Die Datei scheint kein gültiger oBDS-Meldebogen zu sein. Bitte prüfen Sie die Dateiherkunft." |
+| (kein Treffer) | "Die Datei enthält einen unbekannten Fehler. Bitte wenden Sie sich an Ihre IT-Stelle." |
+
 **Acceptance Criteria:**
-- [ ] Bei ungültigem XML ist `additional_info` in der DB gefüllt (XSD-Fehlermeldung)
-- [ ] Frontend zeigt die Fehlermeldung im roten Fehler-Banner an
+- [ ] Bei ungültigem XML ist `additional_info` in der DB gefüllt (lxml-Fehlermeldung)
+- [ ] Frontend zeigt technische Fehlermeldung an (einklappbar, für Admins)
+- [ ] Frontend zeigt kategorisierten Handlungshinweis an (prominent, für Mediziner)
 - [ ] Bei gültigem XML bleibt `additional_info` null
