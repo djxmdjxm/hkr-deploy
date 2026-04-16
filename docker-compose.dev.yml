@@ -131,6 +131,7 @@ services:
       - krebs-api
     environment:
       - PORT=8080
+      - NEXT_PUBLIC_CODE_SERVER_URL=http://192.168.2.7:8081
   ingress:
     build:
       context: ./ingress
