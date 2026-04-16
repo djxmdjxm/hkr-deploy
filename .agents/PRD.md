@@ -275,3 +275,29 @@ im onClick-Handler der Zone statt implizitem Label-for-Binding.
 - [ ] Klick irgendwo in die Drop-Zone oeffnet den System-Dateidialog
 - [ ] Drag and Drop funktioniert weiterhin
 - [ ] Funktioniert in Chrome, Firefox und Edge
+
+---
+
+## Sprint: V1.0 Release-Kandidat (2026-04-16)
+
+**Ziel:** Erste pushbare Version auf GitHub — Annemarie und Kolleginnen können
+vor Ort testen.
+
+**Prio 1 — Muss rein:**
+- [ ] S1: F8 Datei-Dialog verifizieren (Drop-Zone Klick oeffnet System-Dialog)
+- [ ] S2: F2 import-worker XSD-Auswahl (korrektes Schema je nach Dropdown-Wahl)
+- [ ] S3: Fehlerdarstellung bei ungueltigem XML (roter Zustand, Fehlermeldung sichtbar)
+
+**Prio 2 — Soll rein:**
+- [ ] S4: Prüfsummen/Importstatistik nach erfolgreichem Upload in Postgres speichern
+- [ ] S5: Prominenter "R-Umgebung" Button auf Ergebnisseite
+
+**Prio 3 — Nice to have:**
+- [ ] S6: VS Code Theme hell + barrierefrei (Schriftgroesse, Kontrast)
+- [ ] S7: GitHub Push aller Repos (hkr-krebs-web, hkr-deploy, hkr-import-worker, hkr-krebs-api)
+
+**Definition of Done:**
+- Alle P1-Punkte gruener Haken
+- Stack neu gebaut und getestet mit (a) gueltiger XML und (b) absichtlich ungueltigem XML
+- Kein bekannter Crash im import-worker
+- Auf GitHub gepusht
