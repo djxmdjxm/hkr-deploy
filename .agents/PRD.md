@@ -301,3 +301,19 @@ vor Ort testen.
 - Stack neu gebaut und getestet mit (a) gueltiger XML und (b) absichtlich ungueltigem XML
 - Kein bekannter Crash im import-worker
 - Auf GitHub gepusht
+
+---
+
+## F9 — XSD-Fehlermeldung anzeigen (Backlog)
+
+**Problem:** Bei XSD-Validierungsfehler wird  nicht befüllt.
+Das Frontend zeigt einen generischen Fehler ohne Details.
+
+**Lösung:**
+- import-worker: Exception-Text (XSD-Fehlermeldung) in  schreiben
+- Frontend:  aus  auslesen und im Fehler-Banner darstellen
+
+**Acceptance Criteria:**
+- [ ] Bei ungültigem XML ist `additional_info` in der DB gefüllt (XSD-Fehlermeldung)
+- [ ] Frontend zeigt die Fehlermeldung im roten Fehler-Banner an
+- [ ] Bei gültigem XML bleibt `additional_info` null
