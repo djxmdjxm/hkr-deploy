@@ -37,7 +37,7 @@ docker save -o $DUMP_FILE $(docker images --filter=reference='hkr/*' --format '{
 
 if command -v zstd >/dev/null 2>&1; then
   echo ">> Compressing with zstd"
-  zstd -19 -T0 --rm -f $DUMP_FILE   # produces hkr-images.tar.zst, keeps original
+  zstd -15 -T0 --rm -f $DUMP_FILE   # produces hkr-images.tar.zst, keeps original
 elif command -v xz >/dev/null 2>&1; then
   echo ">> Compressing with xz"
   xz -T0 -9 -f $DUMP_FILE      # produces hkr-images.tar.xz, keeps original
