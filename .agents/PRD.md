@@ -27,7 +27,7 @@ in einer air-gapped Docker-Umgebung auf einem Linux-Server im HKR-Intranet.
 | F12 | Build-Version-Anzeige im UI | ✅ Done | NEXT_PUBLIC_BUILD_VERSION via Docker ARG eingebacken |
 | F13 | Validierungsfortschritt-Animation | 📋 Planned (Prio 6) | Blütenblätter korrelieren mit Validierungsfortschritt |
 | F14 | Bulk Upload (bis zu 30 Dateien) | 📋 Planned | Mehrfachauswahl, Parallelisierung, Log-Datei |
-| F15 | Deploy-Skript auf ubuntu-ai | 📋 Planned | deploy.sh web/api/all — ein Befehl statt mehrerer SSH-Kommandos |
+| F15 | Deploy-Skript auf ubuntu-ai | ✅ Done | deploy.sh web/api/all — deployed in 20260419-1434 |
 
 ---
 
@@ -148,7 +148,7 @@ Die neue XSD ist abwärtskompatibel für die im HKR vorhandenen Bestandsdaten.
 ---
 
 *Erstellt: 2026-04-15 | Autor: Christopher Mangels / Claude Code (oikos-dev)*
-*Zuletzt aktualisiert: 2026-04-19 — F10 Schema-Auto-Erkennung ✅ Done (deployed in 20260419-1412); F15 Deploy-Skript neu aufgenommen*
+*Zuletzt aktualisiert: 2026-04-19 — F15 Deploy-Skript ✅ Done (deployed in 20260419-1434)*
 
 ---
 
@@ -557,9 +557,9 @@ ssh christopher-mangels@100.71.14.29 "~/deploy.sh all"
 - Ausgabe: `✅ Version: YYYYMMDD-HHMM deployed`
 
 ### Acceptance Criteria
-- [ ] `~/deploy.sh web` aktualisiert krebs-web vollstaendig (pull + build + restart)
-- [ ] `~/deploy.sh api` aktualisiert krebs-api vollstaendig
-- [ ] `~/deploy.sh all` aktualisiert beide Services
-- [ ] BUILD_VERSION wird korrekt gesetzt und ist im UI sichtbar
-- [ ] Bei git-Konflikten: automatisch stash, dann pull
-- [ ] Skript liegt im hkr-deploy-Repo und ist versioniert
+- [x] `~/deploy.sh web` aktualisiert krebs-web vollstaendig (pull + build + restart)
+- [x] `~/deploy.sh api` aktualisiert krebs-api vollstaendig
+- [x] `~/deploy.sh all` aktualisiert beide Services (web + api + worker)
+- [x] BUILD_VERSION wird korrekt gesetzt und ist im UI sichtbar (getestet: 20260419-1434)
+- [x] Bei git-Konflikten: automatisch stash, dann pull
+- [x] Skript liegt im hkr-deploy-Repo und ist versioniert

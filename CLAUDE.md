@@ -59,7 +59,20 @@ KIKA/
 - Docker Compose Projektname: immer `-p hkr-clean`
 - Compose-Datei liegt in: `.../kika/kika/docker-compose.yml`
 
-**Deploy-Befehl (Vorlage — immer so verwenden):**
+**Deploy-Befehl (Standard — deploy.sh verwenden):**
+```bash
+# Einzelner Service:
+ssh christopher-mangels@100.71.14.29 '~/deploy.sh web'
+ssh christopher-mangels@100.71.14.29 '~/deploy.sh api'
+ssh christopher-mangels@100.71.14.29 '~/deploy.sh worker'
+
+# Alle Services auf einmal:
+ssh christopher-mangels@100.71.14.29 '~/deploy.sh all'
+```
+
+Das Skript `hkr-deploy/deploy.sh` kapselt: git stash, git pull, docker build (mit korrektem BUILD_VERSION direkt auf ubuntu-ai), docker compose -p hkr-clean. Single-Quote verwenden damit keine lokale Shell-Expansion stattfindet.
+
+**Manueller Deploy-Befehl (Fallback falls deploy.sh nicht verfügbar):**
 ```bash
 # Wichtig: \$(date ...) mit Backslash escapen, damit Expansion auf ubuntu-ai stattfindet!
 ssh christopher-mangels@100.71.14.29 "
@@ -72,9 +85,9 @@ ssh christopher-mangels@100.71.14.29 "
 ```
 
 **Häufige Fehler vermeiden:**
-- `$(date ...)` ohne `\` wird auf Windows expandiert → leer → BUILD_VERSION fehlt
-- `git pull` schlägt fehl wenn ubuntu-ai lokale Änderungen hat → immer `git stash` davor
-- `docker compose up` ohne `-p hkr-clean` startet unter falschem Projektnamen
+- `$(date ...)` ohne `\` wird auf Windows expandiert → leer → BUILD_VERSION fehlt (deploy.sh löst das)
+- `git pull` schlägt fehl wenn ubuntu-ai lokale Änderungen hat → immer `git stash` davor (deploy.sh löst das)
+- `docker compose up` ohne `-p hkr-clean` startet unter falschem Projektnamen (deploy.sh löst das)
 
 ---
 
