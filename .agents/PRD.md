@@ -14,12 +14,16 @@ in einer air-gapped Docker-Umgebung auf einem Linux-Server im HKR-Intranet.
 | # | Feature | Status | Anmerkungen |
 |---|---------|--------|-------------|
 | F1 | cTNM-Bug-Fix (Crash bei fehlendem cTNM) | ✅ Done | pTNM ohne cTNM wird korrekt verarbeitet |
-| F2 | Schema-Versionsauswahl (Multi-XSD) | 📋 Planned | Dropdown fuer beide XSD-Versionen |
+| F2 | Schema-Versionsauswahl (Multi-XSD) | ✅ Done | XSD_MAP + ReportType Enum, end-to-end implementiert |
 | F3 | Streaming-Upload via Docker Volume | ✅ Done | Kein base64 mehr, kein Timeout |
-| F5 | Willkommensseite mit Prozess-Stepper | 📋 Planned | Hamburg CD, 4 Schritte |
-| F6 | Upload-Fortschrittsanzeige (Rote Rose) | 📋 Planned | Animierte SVG-Rose |
-| F7 | Ergebnis-Dashboard (Kennzahlen-Cards) | 📋 Planned | 4 Kacheln nach Import |
 | F4 | Schema 3.0.4_RKI einbinden | ✅ Done | Neue XSD von HKR, April 2024 |
+| F5 | Willkommensseite mit Prozess-Stepper | ✅ Done | Hamburg CD, 4 Schritte |
+| F6 | Upload-Fortschrittsanzeige (Rote Rose) | ✅ Done | Animierte SVG-Rose |
+| F7 | Importbericht (Kennzahlen-Cards) | ✅ Done | 4 Kacheln nach Import, distinct patient_id/tumor_id, median age |
+| F8 | Datei-Dialog-Fix (Drop-Zone Klick) | ✅ Done | label[htmlFor] + sr-only input (Browser-kompatibel) |
+| F9 | XSD-Fehlermeldung anzeigen | ✅ Done | Technische Details + Handlungshinweis im UI sichtbar |
+| F10 | Schema-Auto-Erkennung aus XML | 📋 Planned | Schema_Version-Attribut lesen, gezielten Hinweis geben |
+| F11 | Fehlerkategorie Schema-Versions-Mismatch | ✅ Done | Falschklassifizierung als invalid_code_value korrigiert via Path-Check |
 
 ---
 
@@ -35,7 +39,7 @@ darunter pTNM-only und pTNM mit y/r/a-Symbolen).
 
 ---
 
-## Feature 2: Schema-Versionsauswahl (Multi-XSD) 📋
+## Feature 2: Schema-Versionsauswahl (Multi-XSD) ✅
 
 ### Situation
 Das HKR liefert XML-Dateien im oBDS_RKI-Format. Die zugrundeliegenden XSD-Schemas
@@ -89,11 +93,11 @@ validiert werden soll?**
    Verzeichnis kopieren + Enum-Wert + Map-Eintrag ergänzen. Kein weiterer Code nötig.
 
 ### Acceptance Criteria
-- [ ] Dropdown zeigt alle verfügbaren Schema-Versionen
-- [ ] Standard ist die neueste Version (3.0.4_RKI)
-- [ ] Import validiert gegen die gewählte Version
-- [ ] Ältere Dateien (3.0.0.8a) importieren weiterhin fehlerfrei
-- [ ] Neue XSD-Version kann durch Datei + Enum-Eintrag ergänzt werden, ohne weiteren Code
+- [x] Dropdown zeigt alle verfügbaren Schema-Versionen
+- [x] Standard ist die neueste Version (3.0.4_RKI)
+- [x] Import validiert gegen die gewählte Version
+- [x] Ältere Dateien (3.0.0.8a) importieren weiterhin fehlerfrei
+- [x] Neue XSD-Version kann durch Datei + Enum-Eintrag ergänzt werden, ohne weiteren Code
 
 ---
 
@@ -140,10 +144,11 @@ Die neue XSD ist abwärtskompatibel für die im HKR vorhandenen Bestandsdaten.
 ---
 
 *Erstellt: 2026-04-15 | Autor: Christopher Mangels / Claude Code (oikos-dev)*
+*Zuletzt aktualisiert: 2026-04-19 — F7 Importbericht ✅ Done (distinct patient_id/tumor_id, median age, "Fälle"-Label); F12 Build-Version ✅ Done; F10 weiterhin offen*
 
 ---
 
-## Feature 5: Willkommensseite mit Prozess-Stepper 📋
+## Feature 5: Willkommensseite mit Prozess-Stepper ✅
 
 ### Situation
 Das aktuelle Frontend zeigt sofort die Upload-Seite ohne Kontext. Neue Nutzer
@@ -157,20 +162,20 @@ Was muss ich tun? Was passiert nach dem Upload? Bin ich fertig?
 **Wie geben wir dem Nutzer einen sofortigen Überblick über den Gesamtprozess
 und zeigen transparent, in welchem Schritt er sich befindet?**
 
-### Geplante Implementierung
+### Implementierung
 - Horizontaler Stepper oben: Upload → Validierung → Import → Ergebnis
 - Aktiver Schritt: Navy #003063, inaktiv: #D8D8D8, Fehler: #E10019
 - Willkommens-Headline mit kurzer Prozessbeschreibung
 - Hamburg Corporate Design (Lato, Navy/Rot/Grau)
 
 ### Acceptance Criteria
-- [ ] Stepper sichtbar auf allen Upload-Seiten
-- [ ] Aktiver Schritt klar erkennbar
-- [ ] Verstaendlich ohne IT-Kenntnisse
+- [x] Stepper sichtbar auf allen Upload-Seiten
+- [x] Aktiver Schritt klar erkennbar
+- [x] Verstaendlich ohne IT-Kenntnisse
 
 ---
 
-## Feature 6: Upload-Fortschrittsanzeige (Animierte rote Rose) 📋
+## Feature 6: Upload-Fortschrittsanzeige (Animierte rote Rose) ✅
 
 ### Situation
 Beim Upload großer XML-Dateien (bis 200 MB) gibt es kein visuelles Feedback.
@@ -184,7 +189,7 @@ als modernes, einladendes System anfuehlen.
 **Wie zeigen wir den Upload-Fortschritt auf eine Art, die informativ ist
 und gleichzeitig den Charakter des Systems unterstreicht?**
 
-### Geplante Implementierung
+### Implementierung
 - Animierte SVG-Rose waechst mit dem Upload-Fortschritt (0–100%)
 - Farbe: Hamburg-Rot #E10019 (Blume), Gruen (Stiel/Blaetter)
 - Technik: stroke-dasharray/stroke-dashoffset, gesteuert durch XHR-Progress
@@ -192,13 +197,13 @@ und gleichzeitig den Charakter des Systems unterstreicht?**
 - Bei 100%: Rose vollstaendig geoeffnet, Animation haelt an
 
 ### Acceptance Criteria
-- [ ] Rose waechst sichtbar mit dem Fortschritt
-- [ ] MB-Zaehler aktualisiert sich in Echtzeit
-- [ ] Funktioniert bei Dateien bis 200 MB ohne Timeout
+- [x] Rose waechst sichtbar mit dem Fortschritt
+- [x] MB-Zaehler aktualisiert sich in Echtzeit
+- [x] Funktioniert bei Dateien bis 200 MB ohne Timeout
 
 ---
 
-## Feature 7: Importbericht (Kennzahlen-Cards nach Import) 📋
+## Feature 7: Importbericht (Kennzahlen-Cards nach Import) ✅
 
 ### Situation
 Nach erfolgreichem Import sieht der Nutzer nur eine Erfolgsmeldung.
@@ -241,17 +246,15 @@ auf die zuletzt importierte Batch-ID oder den letzten Import-Zeitstempel.
 4. "In R-Umgebung analysieren" Button prominent platziert
 
 ### Acceptance Criteria
-- [ ] 3-4 Kennzahlen-Cards mit echten Daten aus der DB
-- [ ] Medianes Alter, Min/Max sichtbar
-- [ ] Diagnosejahre-Spanne sichtbar
-- [ ] "R-Umgebung" Button prominent und funktional
-- [ ] Verstaendlich ohne IT-Kenntnisse
-
-
+- [x] 3-4 Kennzahlen-Cards mit echten Daten aus der DB
+- [x] Medianes Alter, Min/Max sichtbar
+- [x] Diagnosejahre-Spanne sichtbar
+- [x] "R-Umgebung" Button prominent und funktional
+- [x] Verstaendlich ohne IT-Kenntnisse
 
 ---
 
-## Feature 8: Datei-Dialog-Fix (Drop-Zone Klick) 📋
+## Feature 8: Datei-Dialog-Fix (Drop-Zone Klick) ✅
 
 ### Situation
 Die Upload-Zone zeigt "XML-Datei hier ablegen oder klicken".
@@ -263,55 +266,30 @@ dass ein Klick auf die Zone den System-Dateidialog oeffnet.
 Das ist aktuell nicht zuverlaessig.
 
 ### Ursache
-Das versteckte input[type=file] wird durch das Label-Click-Event
-nicht korrekt ausgeloest, weil das Label interaktive Kindelemente
-enthaelt (DragOver/DragLeave Handler).
+Das versteckte `input[type=file]` wird durch programmatisches `.click()`
+in bestimmten Browsern (Chrome Security-Policy) blockiert, wenn der Aufruf
+nicht direkt aus einem User-Gesture-Event stammt.
 
 ### Fix
-useRef auf das input-Element, expliziter inputRef.current.click()
-im onClick-Handler der Zone statt implizitem Label-for-Binding.
+`<label htmlFor="file">` umschließt die gesamte Drop-Zone.
+Das `input[type=file]` bekommt `className="sr-only"` (visuell versteckt,
+aber im DOM sichtbar) — Browser öffnen den Dialog nativ ohne .click().
 
 ### Acceptance Criteria
-- [ ] Klick irgendwo in die Drop-Zone oeffnet den System-Dateidialog
-- [ ] Drag and Drop funktioniert weiterhin
-- [ ] Funktioniert in Chrome, Firefox und Edge
+- [x] Klick irgendwo in die Drop-Zone oeffnet den System-Dateidialog
+- [x] Drag and Drop funktioniert weiterhin
+- [x] Funktioniert in Chrome, Firefox und Edge
 
 ---
 
-## Sprint: V1.0 Release-Kandidat (2026-04-16)
+## Feature 9: XSD-Fehlermeldung anzeigen 📋
 
-**Ziel:** Erste pushbare Version auf GitHub — Annemarie und Kolleginnen können
-vor Ort testen.
-
-**Prio 1 — Muss rein:**
-- [ ] S1: F8 Datei-Dialog verifizieren (Drop-Zone Klick oeffnet System-Dialog)
-- [ ] S2: F2 import-worker XSD-Auswahl (korrektes Schema je nach Dropdown-Wahl)
-- [ ] S3: Fehlerdarstellung bei ungueltigem XML (roter Zustand, Fehlermeldung sichtbar)
-
-**Prio 2 — Soll rein:**
-- [ ] S4: Prüfsummen/Importstatistik nach erfolgreichem Upload in Postgres speichern
-- [ ] S5: Prominenter "R-Umgebung" Button auf Ergebnisseite
-
-**Prio 3 — Nice to have:**
-- [ ] S6: VS Code Theme hell + barrierefrei (Schriftgroesse, Kontrast)
-- [ ] S7: GitHub Push aller Repos (hkr-krebs-web, hkr-deploy, hkr-import-worker, hkr-krebs-api)
-
-**Definition of Done:**
-- Alle P1-Punkte gruener Haken
-- Stack neu gebaut und getestet mit (a) gueltiger XML und (b) absichtlich ungueltigem XML
-- Kein bekannter Crash im import-worker
-- Auf GitHub gepusht
-
----
-
-## F9 — XSD-Fehlermeldung anzeigen (Backlog)
-
-**Problem:** Bei XSD-Validierungsfehler wird  nicht befüllt.
+**Problem:** Bei XSD-Validierungsfehler wird `additional_info` nicht befüllt.
 Das Frontend zeigt einen generischen Fehler ohne Details.
 
 **Lösung:**
-- import-worker: Exception-Text (XSD-Fehlermeldung) in  schreiben
-- Frontend:  aus  auslesen und im Fehler-Banner darstellen
+- import-worker: Exception-Text (XSD-Fehlermeldung) in `additional_info` schreiben
+- Frontend: `additional_info` auslesen und im Fehler-Banner darstellen
 
 **Technischer Ansatz:**
 - import-worker: lxml-Exception-Text in `additional_info` speichern
@@ -331,7 +309,215 @@ Das Frontend zeigt einen generischen Fehler ohne Details.
 | (kein Treffer) | "Die Datei enthält einen unbekannten Fehler. Bitte wenden Sie sich an Ihre IT-Stelle." |
 
 **Acceptance Criteria:**
-- [ ] Bei ungültigem XML ist `additional_info` in der DB gefüllt (lxml-Fehlermeldung)
-- [ ] Frontend zeigt technische Fehlermeldung an (einklappbar, für Admins)
-- [ ] Frontend zeigt kategorisierten Handlungshinweis an (prominent, für Mediziner)
-- [ ] Bei gültigem XML bleibt `additional_info` null
+- [x] Bei ungültigem XML ist `additional_info` in der DB gefüllt (lxml-Fehlermeldung)
+- [x] Frontend zeigt technische Fehlermeldung an (für Admins)
+- [x] Frontend zeigt Titel "Validierung fehlgeschlagen" statt "Import fehlgeschlagen" bei XSD-Fehler
+- [x] Frontend zeigt kategorisierten Handlungshinweis an (prominent, für Mediziner)
+- [x] Bei gültigem XML bleibt `additional_info` null
+
+**Hinweis:** Schema-Versions-Mismatch (`Schema_Version='3.0.4_RKI': value must be one of [...]`)
+wird noch als `invalid_code_value` statt `wrong_schema_version` klassifiziert → F11.
+
+---
+
+## Feature 10: Schema-Auto-Erkennung aus XML 📋
+
+### Situation
+Der Nutzer wählt die Schema-Version manuell im Dropdown. Eine XML-Datei enthält
+das Attribut `Schema_Version='3.0.4_RKI'` direkt im `<oBDS>`-Root-Element.
+
+### Complication
+Wählt der Nutzer die falsche Version, erhält er einen kryptischen XSD-Fehler
+(z. B. `value must be one of ['3.0.0.8a_RKI']`). Die korrekte Version steht
+aber bereits in der Datei selbst — das System ignoriert sie bisher.
+
+### Question
+**Wie können wir die Schema-Version automatisch aus der XML-Datei lesen
+und dem Nutzer einen gezielten, handlungsorientierten Hinweis geben
+oder die Version direkt vorauswählen?**
+
+### Geplante Implementierung
+
+**Ansatz A (Hinweis, minimal-invasiv):**
+- import-worker: Vor XSD-Validierung `Schema_Version`-Attribut aus XML lesen
+- Falls Version ≠ gewählter ReportType: `additional_info` mit gezieltem Hinweis befüllen
+  z. B. `"Ihre Datei deklariert Schema-Version 3.0.4_RKI. Bitte wählen Sie diese Version im Dropdown."`
+- `error_type = "wrong_schema_version"`
+
+**Ansatz B (Auto-Select, komfortabler):**
+- API: XML-Datei auf `Schema_Version`-Attribut prüfen, Version als Antwort zurückgeben
+- Frontend: Dropdown automatisch auf erkannte Version setzen, Nutzer kann überschreiben
+
+**Empfehlung:** Ansatz A zuerst (kein API-Refactoring nötig), Ansatz B als Folge-Feature.
+
+### Betroffene Dateien
+- `hkr-import-worker/processor/rki_report_processor.py` — Schema_Version lesen, Hinweis befüllen
+- `hkr-krebs-web/src/components/UploadSection.tsx` — Hinweis für `wrong_schema_version` anzeigen
+
+### Acceptance Criteria
+- [ ] import-worker liest `Schema_Version`-Attribut aus dem XML-Root-Element
+- [ ] Bei Versions-Mismatch: `error_type = "wrong_schema_version"`, Hinweis mit erkannter Version
+- [ ] Frontend zeigt: "Ihre Datei deklariert Version X. Bitte wählen Sie diese im Dropdown."
+- [ ] Bei nicht vorhandenem `Schema_Version`-Attribut: kein Absturz, normaler Fehler-Pfad
+
+---
+
+## Feature 11: Fehlerkategorie Schema-Versions-Mismatch korrigieren ✅
+
+### Situation
+Bei einer falsch gewählten Schema-Version schlägt die XSD-Validierung am
+`Schema_Version`-Attribut des Root-Elements fehl. Das oBDS_3.0.0.8a-Schema
+definiert dieses Attribut als feste Enumeration (`"3.0.0.8a_RKI"`). Wird eine
+3.0.4-Datei dagegen validiert, erzeugt xmlschema einen Fehler mit `"enumeration"`
+im `reason`-Text.
+
+### Complication
+`_categorize_xsd_error()` trifft auf `enumeration` und klassifiziert den Fehler
+als `invalid_code_value`. Im Frontend erscheint "Ein Codierwert ist ungültig" —
+korrekt wäre "falsche Schema-Version, bitte Dropdown prüfen".
+
+### Question
+**Wie stellen wir sicher, dass ein Schema-Versions-Mismatch als
+`wrong_schema_version` und nicht als `invalid_code_value` eingestuft wird?**
+
+### Implementierung
+
+**Path-first Strategie:** xmlschema liefert neben dem `reason`-Text auch einen
+`path`-Wert, der den XML-Pfad des fehlerhaften Attributs enthält (z. B. `@Schema_Version`).
+Dieser Path ist stabil und unabhängig von xmlschema-Versionen.
+
+```python
+# In _categorize_xsd_error(), vor den reason-basierten Checks:
+p = path.lower()
+if "schema_version" in p:
+    cat  = "wrong_schema_version"
+    hint = ("Die Schema-Version der Datei stimmt nicht mit der ausgewaehlten Version "
+            "ueberein. Bitte waehlen Sie im Dropdown die passende Schema-Version aus.")
+```
+
+Die bestehende `reason`-basierte Logik bleibt als Fallback unverändert.
+
+### Betroffene Dateien
+- `hkr-import-worker/processor/rki_report_processor.py` — `_categorize_xsd_error()` L40–74
+
+### Acceptance Criteria
+- [x] Schema_Version-Fehler → `category = "wrong_schema_version"` statt `invalid_code_value`
+- [x] Hinweis verweist explizit auf das Dropdown
+- [x] Echte `invalid_code_value`-Fehler (Enum-Fehler an anderen Pfaden) bleiben korrekt klassifiziert
+
+---
+
+## Sprint: V1.0 Release-Kandidat (2026-04-16) ✅ Abgeschlossen
+
+**Ergebnis:** Alle P1-Punkte erledigt, Stack getestet, auf GitLab gepusht.
+Annemarie und Kolleginnen testen aktuell vor Ort.
+
+- [x] S1: F8 Datei-Dialog verifizieren (Drop-Zone Klick oeffnet System-Dialog)
+- [x] S2: F2 import-worker XSD-Auswahl (korrektes Schema je nach Dropdown-Wahl)
+- [x] S3: Fehlerdarstellung bei ungueltigem XML (roter Zustand, Fehlermeldung sichtbar)
+- [x] S7: GitLab Push aller Repos (hkr-krebs-web, hkr-deploy, hkr-import-worker, hkr-krebs-api)
+
+---
+
+## Sprint: V1.1 Vor-Ort-Test (2026-04-16)
+
+**Ziel:** Importstatistik und prominenter R-Umgebung-Button.
+
+**Prio 1 — Muss rein:**
+- [x] S4: Importstatistik nach erfolgreichem Upload anzeigen (Kennzahlen-Cards: Patienten, Fälle, Diagnosejahre, Medianes Alter)
+- [x] S5: Prominenter "R-Umgebung analysieren" Button auf Ergebnisseite
+
+**Prio 2 — Infrastruktur:**
+- [ ] S6: Performanceanalyse deploy.all-Skript (Laufzeit messen, Bottlenecks identifizieren)
+
+**Definition of Done:**
+- S4 und S5 im Frontend sichtbar nach erfolgreichem Import
+- Kennzahlen kommen aus echter DB-Abfrage (kein Dummy)
+- Vor-Ort-Test durch Annemarie bestanden
+
+---
+
+## Feature 12: Build-Version-Anzeige im UI ✅
+
+### Situation
+Nach einem Deployment ist unklar ob der Browser noch die alte oder schon die neue Version laed.
+
+### Complication
+Verwirrung beim Testen: Man sieht eine falsche UI, weiss aber nicht ob es ein Bug oder ein Cache-Problem ist.
+
+### Question
+**Wie sieht man auf einen Blick, welche Build-Version gerade im Browser laeuft?**
+
+### Konzept
+- Build-Zeitstempel (YYYYMMDD-HHMM) wird beim Docker-Build als `NEXT_PUBLIC_BUILD_VERSION` eingebacken
+- Kleine Versionsanzeige in der unteren rechten Ecke der Seite (z.B. `v2026-04-19.1`)
+- Claude nennt die erwartete Versionsnummer nach jedem Deployment
+
+### Acceptance Criteria
+- [x] Versionsnummer ist im UI sichtbar (klein, unaufdringlich)
+- [x] Stimmt mit dem Build-Zeitpunkt ueberein
+- [x] Wird beim naechsten Deploy automatisch aktualisiert
+
+---
+
+## Feature 13: Validierungsfortschritt-Animation (Prio 6)
+
+### Situation
+Die XSD-Validierung dauert bei grossen Dateien 10-30 Sekunden.
+Die Blütenblätter der Rose erscheinen sofort, dann gibt es 20+ Sekunden keine Veraenderung.
+
+### Complication
+Der Nutzer weiss nicht ob das System noch arbeitet oder haengt.
+
+### Question
+**Koennen wir die Blütenblätter mit dem Validierungsfortschritt korrelieren?**
+
+### Konzept (offen)
+- Option A: Fortschrittsschaetzung anhand Dateigroesse (grob, keine echten Daten)
+- Option B: Import-Worker sendet Streaming-Events (BullMQ Progress API), Frontend pollt
+- Option C: Animierter Pulse/Shimmer waehrend Validierung ohne echter Fortschrittsdaten
+
+**Empfehlung:** Option B wenn der Worker-Umbau vertretbar ist, sonst Option C als Quick-Win.
+
+### Acceptance Criteria
+- [ ] Blütenblätter oeffnen sich sichtbar waehrend der Validierung (nicht sofort fertig)
+- [ ] Nutzer erkennt dass das System aktiv arbeitet
+
+---
+
+## Feature 14: Bulk Upload (bis zu 30 Dateien)
+
+### Situation
+Manche Krebsregister liefern bis zu 30 oBDS-XML-Dateien pro Lieferung.
+Aktuell muss jede Datei einzeln hochgeladen werden.
+
+### Complication
+30 manuelle Upload-Zyklen sind nicht praxistauglich.
+
+### Question
+**Wie koennen mehrere Dateien in einem Durchgang hochgeladen, validiert und importiert werden?**
+
+### Konzept (besprochen 2026-04-19)
+**Dateiauswahl:**
+- Filepicker erlaubt Mehrfachauswahl (`multiple`-Attribut)
+- Alternativ: mehrfaches Drag-and-Drop oder Ordner-Upload
+
+**Parallelisierung:**
+- Waehrend Datei 1 validiert/importiert wird, startet Upload von Datei 2
+- Maximal N parallele Imports (konfigurierbar, Vorschlag N=3)
+- BullMQ-Queue verarbeitet Jobs parallel
+
+**Ergebnis-Log:**
+- Pro Datei: Status (Erfolg/Fehler), Fehlermeldung falls vorhanden, Zeitstempel
+- Gesamtzusammenfassung: X von Y erfolgreich, Z fehlgeschlagen
+- Log als Download-Option (CSV oder TXT)
+
+**UI:**
+- Fortschrittsliste: Dateiname | Status-Icon | Ergebnis
+- Kennzahlen-Gesamtbericht am Ende (aggregiert ueber alle Dateien)
+
+### Acceptance Criteria
+- [ ] Mehrfachauswahl im Filepicker moeglich
+- [ ] Dateien werden sequenziell oder pipeline-parallelisiert verarbeitet
+- [ ] Log-Datei mit Ergebnis pro Datei erzeugt
+- [ ] Gesamtbericht nach Abschluss aller Importe
