@@ -147,3 +147,12 @@ Nach Abschluss jedes Features zwingend:
 3. Build-Version eintragen, in der das Feature deployed wurde (z.B. `deployed in 20260419-1412`)
 4. "Zuletzt aktualisiert"-Zeile am Ende der Metadaten aktualisieren
 5. PRD.md committen und nach `hkr-deploy` pushen — PRD ist Wahrheitsquelle, muss versioniert sein
+
+## CLAUDE.md Sync-Regel
+
+`KIKA/CLAUDE.md` ist die **Quelle**. `hkr-deploy/CLAUDE.md` ist eine versionierte Kopie.
+Nach jeder Änderung an `KIKA/CLAUDE.md` zwingend synchronisieren:
+```bash
+cp KIKA/CLAUDE.md hkr-deploy/CLAUDE.md
+# dann in hkr-deploy committen und pushen
+```
