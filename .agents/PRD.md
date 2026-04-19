@@ -22,8 +22,12 @@ in einer air-gapped Docker-Umgebung auf einem Linux-Server im HKR-Intranet.
 | F7 | Importbericht (Kennzahlen-Cards) | ✅ Done | 4 Kacheln nach Import, distinct patient_id/tumor_id, median age |
 | F8 | Datei-Dialog-Fix (Drop-Zone Klick) | ✅ Done | label[htmlFor] + sr-only input (Browser-kompatibel) |
 | F9 | XSD-Fehlermeldung anzeigen | ✅ Done | Technische Details + Handlungshinweis im UI sichtbar |
-| F10 | Schema-Auto-Erkennung aus XML | 📋 Planned | Schema_Version-Attribut lesen, gezielten Hinweis geben |
+| F10 | Schema-Auto-Erkennung aus XML | ✅ Done | Dropdown entfernt, client-seitig aus XML-Header erkannt, Badge-Feedback (20260419-1412) |
 | F11 | Fehlerkategorie Schema-Versions-Mismatch | ✅ Done | Falschklassifizierung als invalid_code_value korrigiert via Path-Check |
+| F12 | Build-Version-Anzeige im UI | ✅ Done | NEXT_PUBLIC_BUILD_VERSION via Docker ARG eingebacken |
+| F13 | Validierungsfortschritt-Animation | 📋 Planned (Prio 6) | Blütenblätter korrelieren mit Validierungsfortschritt |
+| F14 | Bulk Upload (bis zu 30 Dateien) | 📋 Planned | Mehrfachauswahl, Parallelisierung, Log-Datei |
+| F15 | Deploy-Skript auf ubuntu-ai | 📋 Planned | deploy.sh web/api/all — ein Befehl statt mehrerer SSH-Kommandos |
 
 ---
 
@@ -144,7 +148,7 @@ Die neue XSD ist abwärtskompatibel für die im HKR vorhandenen Bestandsdaten.
 ---
 
 *Erstellt: 2026-04-15 | Autor: Christopher Mangels / Claude Code (oikos-dev)*
-*Zuletzt aktualisiert: 2026-04-19 — F7 Importbericht ✅ Done (distinct patient_id/tumor_id, median age, "Fälle"-Label); F12 Build-Version ✅ Done; F10 weiterhin offen*
+*Zuletzt aktualisiert: 2026-04-19 — F10 Schema-Auto-Erkennung ✅ Done (deployed in 20260419-1412); F15 Deploy-Skript neu aufgenommen*
 
 ---
 
@@ -521,3 +525,41 @@ Aktuell muss jede Datei einzeln hochgeladen werden.
 - [ ] Dateien werden sequenziell oder pipeline-parallelisiert verarbeitet
 - [ ] Log-Datei mit Ergebnis pro Datei erzeugt
 - [ ] Gesamtbericht nach Abschluss aller Importe
+
+---
+
+## Feature 15: Deploy-Skript auf ubuntu-ai (deploy.sh)
+
+### Situation
+Jedes Deployment erfordert mehrere manuelle SSH-Befehle: git stash, git pull, docker build (mit korrektem BUILD_VERSION-Timestamp), docker compose up. Die Befehle sind fehleranfällig (z.B. fehlerhaftes `$(date ...)` Escaping) und muessen jedes Mal neu zusammengesetzt werden.
+
+### Complication
+Wiederkehrende Fehler: BUILD_VERSION leer weil Shell-Expansion auf falscher Seite passiert, git-Konflikte weil ubuntu-ai lokale Aenderungen hat, falscher Compose-Projektname. Jeder Deploy kostet Debugging-Zeit fuer dieselben Probleme.
+
+### Question
+**Wie koennen wir einen einzelnen Befehl definieren der zuverlässig alle Services auf ubuntu-ai aktualisiert?**
+
+### Konzept
+Shell-Skript `deploy.sh` direkt auf ubuntu-ai (im hkr-deploy-Repo), das per `ssh ubuntu-ai ./deploy.sh [web|api|all]` aufrufbar ist:
+
+```bash
+# Beispiel-Aufruf:
+ssh christopher-mangels@100.71.14.29 "~/deploy.sh web"
+ssh christopher-mangels@100.71.14.29 "~/deploy.sh api"
+ssh christopher-mangels@100.71.14.29 "~/deploy.sh all"
+```
+
+**Was das Skript intern macht:**
+- `git stash` vor pull (verhindert Konflikte bei lokalen Aenderungen)
+- `git pull` im richtigen Repo-Verzeichnis
+- `docker build` mit `BUILD_VERSION=$(date +%Y%m%d-%H%M)` (lokal auf ubuntu-ai, kein Escaping-Problem)
+- `docker compose -p hkr-clean up -d --force-recreate --no-build <service>`
+- Ausgabe: `✅ Version: YYYYMMDD-HHMM deployed`
+
+### Acceptance Criteria
+- [ ] `~/deploy.sh web` aktualisiert krebs-web vollstaendig (pull + build + restart)
+- [ ] `~/deploy.sh api` aktualisiert krebs-api vollstaendig
+- [ ] `~/deploy.sh all` aktualisiert beide Services
+- [ ] BUILD_VERSION wird korrekt gesetzt und ist im UI sichtbar
+- [ ] Bei git-Konflikten: automatisch stash, dann pull
+- [ ] Skript liegt im hkr-deploy-Repo und ist versioniert
