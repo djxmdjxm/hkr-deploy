@@ -68,6 +68,8 @@ services:
     depends_on:
       - central-db
       - job-queue
+    volumes:
+      - upload-data:/data/uploads
     environment:
       JOB_QUEUE_NAME: import-queue
       JOB_QUEUE_CONNECTION: redis://:1234@job-queue:6379
@@ -82,6 +84,8 @@ services:
     depends_on:
       - central-db
       - job-queue
+    volumes:
+      - upload-data:/data/uploads
     environment:
       JOB_QUEUE_NAME: import-queue
       JOB_QUEUE_CONNECTION: redis://:1234@job-queue:6379
@@ -112,3 +116,5 @@ networks:
 volumes:
   krebs-db:
     name: "krebs-db"
+  upload-data:
+    name: "upload-data"
