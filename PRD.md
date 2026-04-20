@@ -28,7 +28,7 @@ in einer air-gapped Docker-Umgebung auf einem Linux-Server im HKR-Intranet.
 | F13 | Validierungsfortschritt-Animation | 📋 Planned (Prio 6) | Blütenblätter korrelieren mit Validierungsfortschritt |
 | F14 | Bulk Upload (bis zu 30 Dateien) | ✅ Done | Tab-Toggle, Rosen-Garten, N=3 parallel, CSV-Log — deployed in 20260420-0611 |
 | F15 | Deploy-Skript auf ubuntu-ai | ✅ Done | deploy.sh web/api/all — deployed in 20260419-1434 |
-| B1 | R-Umgebungs-URL zeigt localhost im Airgap | 🐛 Open | NEXT_PUBLIC_CODE_SERVER_URL wird zur Build-Zeit eingebettet → Fallback localhost:8081. Fix: window.location.hostname dynamisch nutzen. Gemeldet von Annemarie 2026-04-20 |
+| B1 | R-Umgebungs-URL zeigt localhost im Airgap | ✅ Done | useCodeServerUrl()-Hook liest window.location.hostname dynamisch — deployed in 20260420-1540 |
 | B2 | Import-Worker crasht bei optionalem Stellung_OP (SYST) | 🐛 Open | In oBDS 3.0.4 ist Stellung_OP bei systemischer Therapie minOccurs="0". Processor nutzt []-Zugriff statt .get() → KeyError. DB-Model hat nullable=False → muss auf nullable=True + Migration. Gemeldet von Annemarie 2026-04-20 |
 
 ---
@@ -150,7 +150,7 @@ Die neue XSD ist abwärtskompatibel für die im HKR vorhandenen Bestandsdaten.
 ---
 
 *Erstellt: 2026-04-15 | Autor: Christopher Mangels / Claude Code (oikos-dev)*
-*Zuletzt aktualisiert: 2026-04-20 — B1 R-Umgebungs-URL Airgap-Bug gemeldet von Annemarie*
+*Zuletzt aktualisiert: 2026-04-20 — B1 R-Umgebungs-URL Airgap-Bug gefixt (deployed in 20260420-1540)*
 
 ---
 
