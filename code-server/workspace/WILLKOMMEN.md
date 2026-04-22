@@ -2,9 +2,12 @@
 
 ## So starten Sie Ihre erste Analyse
 
-**Schritt 1:** Klicken Sie links im Explorer auf `analyse.R`
-**Schritt 2:** Klicken Sie oben rechts auf **"Run File"** (▶ Symbol)
-  — oder: Alles markieren mit `Strg+A`, dann `Strg+Enter`
+**Schritt 1:** Klicken Sie unten auf das **Terminal**-Panel (oder `Strg+J`)
+**Schritt 2:** Tippen Sie folgenden Befehl ein und drücken Sie **Enter**:
+
+```
+Rscript analyse.R
+```
 
 **Das Skript verbindet sich automatisch mit der Datenbank.**
 Kein Passwort, keine weitere Konfiguration nötig.
