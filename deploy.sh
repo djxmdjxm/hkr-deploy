@@ -38,13 +38,24 @@ deploy_worker() {
   echo "✅ import-worker deployed"
 }
 
+deploy_rstudio() {
+  echo ">> Deploying rstudio-server..."
+  cd "$REPO_BASE/hkr-deploy"
+  git stash || true
+  git pull
+  docker build -t hkr/rstudio-server:latest ./rstudio-server/
+  docker compose $COMPOSE_OPTS up -d --force-recreate --no-build krebs-code
+  echo "✅ rstudio-server deployed"
+}
+
 case "${1:-}" in
-  web)    deploy_web ;;
-  api)    deploy_api ;;
-  worker) deploy_worker ;;
-  all)    deploy_web && deploy_api && deploy_worker ;;
+  web)     deploy_web ;;
+  api)     deploy_api ;;
+  worker)  deploy_worker ;;
+  rstudio) deploy_rstudio ;;
+  all)     deploy_web && deploy_api && deploy_worker && deploy_rstudio ;;
   *)
-    echo "Usage: deploy.sh [web|api|worker|all]"
+    echo "Usage: deploy.sh [web|api|worker|rstudio|all]"
     exit 1
     ;;
 esac

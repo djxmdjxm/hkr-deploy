@@ -1,0 +1,41 @@
+# Willkommen im KIKA Analyse-System
+
+## So starten Sie Ihre erste Analyse
+
+1. Klicken Sie oben links auf **`analyse.R`**
+2. Klicken Sie auf **Source** (▶▶ oben rechts im Editor)
+3. Ergebnisse erscheinen unten in der **Konsole**, Grafiken rechts unten im **Plots-Panel**
+
+---
+
+## Dateien in diesem Workspace
+
+| Datei | Inhalt |
+|-------|--------|
+| `analyse.R` | Erste Übersicht: Fallzahlen, ICD-Codes, Altersverteilung |
+| `karte_kreise.R` | Deutschlandkarte auf Kreisebene (Beispiel) |
+| `referenz/shapefiles/` | BKG VG250 Kreise (GeoPackage) |
+| `referenz/bevoelkerung/` | Destatis Bevölkerungsdaten nach Kreisen |
+
+---
+
+## Eigene Dateien hinzufügen
+
+**Im Browser:**
+- Panel unten rechts → Reiter **Files**
+- Button **Upload** → Datei von Ihrem PC hochladen
+
+**Für dauerhafte Aufnahme ins System:**
+- Datei in `referenz/` ablegen
+- Christopher Mangels informieren → Datei wird ins nächste Image eingebaut
+
+---
+
+## Datenbankverbindung
+
+Die Verbindung zur Krebsregister-Datenbank ist in allen Skripten
+voreingestellt — kein Passwort, keine Konfiguration nötig.
+
+---
+
+*Bei Fragen: christopher.mangels@innopard.com*
