@@ -1,7 +1,7 @@
 {
   "r.rterm.linux": "/usr/bin/Rscript",
   "r.bracketedPaste": true,
-  "r.plot.useHttpgd": false,
+  "r.plot.useHttpgd": true,
   "editor.fontSize": 14,
   "editor.formatOnSave": false,
   "workbench.startupEditor": "none",

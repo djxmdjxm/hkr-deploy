@@ -17,7 +17,8 @@ RUN apt update -qq
 RUN apt-get install -y --no-install-recommends \
   curl sudo dumb-init ca-certificates \
   software-properties-common dirmngr \
-  libpq-dev libssl-dev
+  libpq-dev libssl-dev \
+  libcairo2-dev libpango1.0-dev libfontconfig1-dev libfreetype6-dev
 RUN rm -rf /var/lib/apt/lists/*
 
 # install R
@@ -37,6 +38,9 @@ RUN R -q -e 'install.packages("ggplot2", repos="https://cloud.r-project.org")'
 RUN R -q -e 'install.packages("writexl", repos="https://cloud.r-project.org")'
 RUN R -q -e 'install.packages("sandwich", repos="https://cloud.r-project.org")'
 RUN R -q -e 'install.packages("lmtest", repos="https://cloud.r-project.org")'
+RUN R -q -e 'install.packages("dplyr", repos="https://cloud.r-project.org")'
+RUN R -q -e 'install.packages("lubridate", repos="https://cloud.r-project.org")'
+RUN R -q -e 'install.packages("httpgd", repos="https://cloud.r-project.org")'
 
 # install VS Code and extensions
 RUN curl -fsSL https://code-server.dev/install.sh | sh
