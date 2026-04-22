@@ -59,8 +59,8 @@ USER $USER
 ENV HOME=/home/$USER
 WORKDIR /home/$USER/project
 
-COPY ./examples /home/$USER/project/examples
-COPY ./workspace /home/$USER/project/
+COPY --chown=$USER:$USER ./examples /home/$USER/project/examples
+COPY --chown=$USER:$USER ./workspace /home/$USER/project/
 
 RUN code-server --install-extension reditorsupport.r
 
