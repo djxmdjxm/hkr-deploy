@@ -12,7 +12,7 @@ RUN R -q -e 'install.packages(c(\
     "DBI", "RPostgres", "jsonlite", \
     "dplyr", "tidyr", "lubridate", \
     "ggplot2", "scales", "RColorBrewer", \
-    "sf", "tmap", \
+    "sf", \
     "data.table", "readxl", "writexl", \
     "tableone", "epitools", \
     "sandwich", "lmtest" \
@@ -21,10 +21,10 @@ RUN R -q -e 'install.packages(c(\
 # BKG VG250 Kreise herunterladen (GeoPackage, freie Open-Data-Lizenz)
 RUN mkdir -p /home/rstudio/referenz/shapefiles && \
     curl -fsSL \
-    "https://daten.gdz.bkg.bund.de/produkte/vg/vg250_ebenen_0101/aktuell/vg250_01-01.utm32s.gpkg.zip" \
+    "https://daten.gdz.bkg.bund.de/produkte/vg/vg250_ebenen_0101/aktuell/vg250_01-01.utm32s.gpkg.ebenen.zip" \
     -o /tmp/vg250.zip && \
     unzip -o /tmp/vg250.zip -d /tmp/vg250/ && \
-    cp /tmp/vg250/*.gpkg /home/rstudio/referenz/shapefiles/ && \
+    find /tmp/vg250 -name "*.gpkg" -exec cp {} /home/rstudio/referenz/shapefiles/ \; && \
     rm -rf /tmp/vg250 /tmp/vg250.zip && \
     chown -R rstudio:rstudio /home/rstudio/referenz/
 
