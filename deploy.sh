@@ -14,7 +14,7 @@ deploy_web() {
   git pull
   BUILD_VERSION=$(date +%Y%m%d-%H%M)
   docker build --build-arg BUILD_VERSION="$BUILD_VERSION" -t hkr/krebs-web:latest .
-  docker compose $COMPOSE_OPTS up -d --force-recreate --no-build krebs-web
+  docker compose $COMPOSE_OPTS up -d --force-recreate --no-build --no-deps krebs-web
   echo "✅ krebs-web Version: $BUILD_VERSION deployed"
 }
 
@@ -24,7 +24,7 @@ deploy_api() {
   git stash || true
   git pull
   docker build -t hkr/krebs-api:latest .
-  docker compose $COMPOSE_OPTS up -d --force-recreate --no-build krebs-api
+  docker compose $COMPOSE_OPTS up -d --force-recreate --no-build --no-deps krebs-api
   echo "✅ krebs-api deployed"
 }
 
@@ -34,7 +34,7 @@ deploy_worker() {
   git stash || true
   git pull
   docker build -t hkr/import-worker:latest .
-  docker compose $COMPOSE_OPTS up -d --force-recreate --no-build import-worker
+  docker compose $COMPOSE_OPTS up -d --force-recreate --no-build --no-deps import-worker
   echo "✅ import-worker deployed"
 }
 
@@ -44,7 +44,7 @@ deploy_rstudio() {
   git stash || true
   git pull
   docker build -t hkr/rstudio-server:latest ./rstudio-server/
-  docker compose $COMPOSE_OPTS up -d --force-recreate --no-build krebs-code
+  docker compose $COMPOSE_OPTS up -d --force-recreate --no-build --no-deps krebs-code
   echo "✅ rstudio-server deployed"
 }
 
