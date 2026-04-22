@@ -1,0 +1,14 @@
+{
+  "r.rterm.linux": "/usr/bin/Rscript",
+  "r.bracketedPaste": true,
+  "r.plot.useHttpgd": false,
+  "editor.fontSize": 14,
+  "editor.formatOnSave": false,
+  "workbench.startupEditor": "none",
+  "workbench.colorTheme": "Default Light Modern",
+  "files.associations": {
+    "*.R": "r",
+    "*.Rmd": "rmd"
+  },
+  "explorer.openEditors.visible": 0
+}

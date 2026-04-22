@@ -56,10 +56,15 @@ ENV HOME=/home/$USER
 WORKDIR /home/$USER/project
 
 COPY ./examples /home/$USER/project/examples
+COPY ./workspace /home/$USER/project/
 
 RUN code-server --install-extension reditorsupport.r
+
+# pre-configure code-server user settings
+RUN mkdir -p /home/$USER/.local/share/code-server/User
+COPY --chown=$USER:$USER ./workspace/.vscode/settings.json /home/$USER/.local/share/code-server/User/settings.json
 
 # Start code-server as the non-root user
 EXPOSE 8080
 ENTRYPOINT ["dumb-init", "code-server"]
-CMD ["--bind-addr", "0.0.0.0:8080", "--auth", "none", "--disable-telemetry", "--disable-getting-started-override", "."]
+CMD ["--bind-addr", "0.0.0.0:8080", "--auth", "none", "--disable-telemetry", "--disable-getting-started-override", ".", "WILLKOMMEN.md"]
