@@ -334,9 +334,6 @@ Outputs aus dem Working Directory rauskopieren, **bevor** der Container
 neu erstellt wird. Alles unter `~/projekte/<…>/` was nicht im Image ist,
 geht sonst verloren.
 
-**Wer betreut KIKA inhaltlich und technisch?**
-Hamburgisches Krebsregister:
+**Bei Fragen und Anmerkungen — Hamburgisches Krebsregister:**
 - Dr. Annemarie Schultz — annemarie.schultz@bwfg.hamburg.de
-  (inhaltliche Fragen, Forschungsprojekte, Datenzugang)
 - PD Dr. Frederik Peters — frederik.peters@bwfg.hamburg.de
-  (technische Betreuung, Container-Updates)

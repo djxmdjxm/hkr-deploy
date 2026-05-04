@@ -384,10 +384,10 @@ docker compose -p hkr-clean logs -f krebs-api
 <a id="10-kontakt"></a>
 ## 10. Kontakt
 
-**Technischer Support und Rückfragen:**
+**Bei Fragen und Anmerkungen:**
 Hamburgisches Krebsregister
-- PD Dr. Frederik Peters — frederik.peters@bwfg.hamburg.de
 - Dr. Annemarie Schultz — annemarie.schultz@bwfg.hamburg.de
+- PD Dr. Frederik Peters — frederik.peters@bwfg.hamburg.de
 
 **Beim Melden eines Problems bitte angeben:**
 - Genaue Fehlermeldung (Screenshot ist hilfreich)
