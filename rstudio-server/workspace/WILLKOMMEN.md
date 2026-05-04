@@ -14,8 +14,20 @@
 |-------|--------|
 | `analyse.R` | Erste Übersicht: Fallzahlen, ICD-Codes, Altersverteilung |
 | `karte_kreise.R` | Deutschlandkarte auf Kreisebene (Beispiel) |
+| `projekte/` | Forschungsprojekte (siehe `projekte/2026-C50-BET/` als Beispiel) |
 | `referenz/shapefiles/` | BKG VG250 Kreise (GeoPackage) |
 | `referenz/bevoelkerung/` | Destatis Bevölkerungsdaten nach Kreisen |
+
+---
+
+## Forschungsprojekte
+
+Jedes Projekt liegt in einem eigenen Ordner unter `projekte/<JAHR>-<KÜRZEL>/`
+mit `README.md`, durchnummerierten Skripten (`01_…`, `02_…`) und falls nötig
+einem `packages.R` für zusätzliche R-Pakete.
+
+Standardmäßig sind 28 R-Pakete vorinstalliert (Tidyverse, data.table, sf,
+Survival, Reporting). Liste siehe `R_PACKAGES.md` im hkr-deploy-Repo.
 
 ---
 
@@ -26,7 +38,7 @@
 - Button **Upload** → Datei von Ihrem PC hochladen
 
 **Für dauerhafte Aufnahme ins System:**
-- Datei in `referenz/` ablegen
+- Datei in `referenz/` oder `projekte/<projektordner>/` ablegen
 - Christopher Mangels informieren → Datei wird ins nächste Image eingebaut
 
 ---
