@@ -45,4 +45,4 @@ Kein Passwort, keine weitere Konfiguration nötig.
 
 ---
 
-*Bei Fragen: christopher.mangels@innopard.com*
+*Bei Fragen: Hamburgisches Krebsregister — annemarie.schultz@bwfg.hamburg.de · frederik.peters@bwfg.hamburg.de*

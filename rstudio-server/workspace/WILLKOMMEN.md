@@ -39,7 +39,8 @@ Survival, Reporting). Liste siehe `R_PACKAGES.md` im hkr-deploy-Repo.
 
 **Für dauerhafte Aufnahme ins System:**
 - Datei in `referenz/` oder `projekte/<projektordner>/` ablegen
-- Christopher Mangels informieren → Datei wird ins nächste Image eingebaut
+- KIKA-Administrator informieren (Hamburgisches Krebsregister) →
+  Datei wird ins nächste Image eingebaut
 
 ---
 
@@ -50,4 +51,4 @@ voreingestellt — kein Passwort, keine Konfiguration nötig.
 
 ---
 
-*Bei Fragen: christopher.mangels@innopard.com*
+*Bei Fragen: Hamburgisches Krebsregister — annemarie.schultz@bwfg.hamburg.de · frederik.peters@bwfg.hamburg.de*
