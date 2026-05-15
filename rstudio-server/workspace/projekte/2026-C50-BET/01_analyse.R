@@ -232,7 +232,7 @@ cat("============================================================\n")
 
 cat(sprintf("BET-Patientinnen gesamt: %d\n", n_bet))
 cat(sprintf("Davon mit RT:            %d\n", n_bet_rt))
-cat(sprintf("RT-Rate nach BET:        %.1f%%  (Ziel: 72%%)\n", rt_rate))
+cat(sprintf("RT-Rate nach BET:        %.1f%%  (DKG-Vorgabe: >=90%%)\n", rt_rate))
 
 rt_ag <- dat[op_typ == "BET", .(
   n_bet   = .N,
@@ -296,8 +296,8 @@ p2 <- ggplot(rt_ag[!is.na(ag_gr)], aes(x = ag_gr, y = rt_rate)) +
   geom_col(fill = hh_blau, width = 0.6) +
   geom_text(aes(label = paste0(rt_rate, "%")),
             vjust = -0.3, size = 3.5, color = hh_dunkelblau) +
-  geom_hline(yintercept = 72, linetype = "dashed", color = hh_rot, linewidth = 0.8) +
-  annotate("text", x = 0.7, y = 74, label = "Ziel: 72%",
+  geom_hline(yintercept = 90, linetype = "dashed", color = hh_rot, linewidth = 0.8) +
+  annotate("text", x = 0.7, y = 92, label = "DKG-Vorgabe: 90%",
            color = hh_rot, hjust = 0, size = 3.5) +
   scale_y_continuous(limits = c(0, 105), labels = function(x) paste0(x, "%")) +
   labs(title = "RT-Rate nach BET nach Altersgruppe",
@@ -345,12 +345,12 @@ if (length(gpkg_pfad) > 0 && file.exists(gpkg_pfad)) {
   andere <- kreise[!startsWith(kreise$AGS, "02"), ]
 
   # RT-Rate als Fuellfarbe und Label
-  # Gruen = Ziel erreicht (>=72%), Rot = unter Ziel
-  hh_farbe <- if (rt_rate >= 72) "#2e7d32" else hh_rot
+  # Gruen = DKG-Vorgabe erreicht (>=90%), Rot = unter Vorgabe
+  hh_farbe <- if (rt_rate >= 90) "#2e7d32" else hh_rot
 
   hh_center <- st_coordinates(st_centroid(st_union(hh)))
 
-  rt_label <- sprintf("RT-Rate nach BET\n%.1f%%\n(Ziel: ≥72%%)", rt_rate)
+  rt_label <- sprintf("RT-Rate nach BET\n%.1f%%\n(DKG-Vorgabe: ≥90%%)", rt_rate)
 
   p_karte <- ggplot() +
     geom_sf(data = andere, fill = "#DDE4ED", color = "white", linewidth = 0.15) +
