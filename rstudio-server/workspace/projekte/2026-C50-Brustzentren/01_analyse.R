@@ -12,6 +12,10 @@
 rm(list = ls())
 graphics.off()
 
+PROJ <- "/home/rstudio/projekte/2026-C50-Brustzentren"
+OUT  <- file.path(PROJ, "outputs")
+dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
+
 # ============================================================
 # PAKETE
 # ============================================================
@@ -27,14 +31,10 @@ hh_rot        <- "#E10019"
 hh_dunkelblau <- "#003063"
 hh_dunkelgrau <- "#757575"
 
-# Output-Verzeichnis
-OUT <- file.path(getwd(), "outputs")
-dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
-
 # ============================================================
 # REFERENZTABELLE LADEN
 # ============================================================
-ref_pfad <- file.path(getwd(), "data", "referenz_op_zentren_hamburg.csv")
+ref_pfad <- file.path(PROJ, "data", "referenz_op_zentren_hamburg.csv")
 if (!file.exists(ref_pfad)) stop("Referenztabelle nicht gefunden: ", ref_pfad)
 op_zentren <- fread(ref_pfad)
 cat("Referenztabelle geladen:", nrow(op_zentren), "Faelle mit Zentrumszuordnung\n")

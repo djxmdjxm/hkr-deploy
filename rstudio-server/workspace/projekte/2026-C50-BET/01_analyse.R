@@ -4,11 +4,15 @@
 # Erstellt:    2026-04-22
 #
 # Source ausfuehren: Strg+Shift+S  oder  Source-Button
-# Ergebnisse: Konsole + PNG/PDF + Excel im Working Directory
+# Ergebnisse: Konsole + PNG/PDF + Excel in outputs/
 # ============================================================
 
 rm(list = ls())
 graphics.off()
+
+PROJ <- "/home/rstudio/projekte/2026-C50-BET"
+OUT  <- file.path(PROJ, "outputs")
+dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
 
 # ============================================================
 # PAKETE
@@ -288,8 +292,8 @@ p1 <- ggplot(op_plot, aes(x = op_typ, y = N, fill = op_typ)) +
   theme(legend.position = "none",
         plot.title    = element_text(color = hh_dunkelblau, face = "bold"),
         plot.subtitle = element_text(color = hh_dunkelgrau))
-ggsave("C50_OP_Typ.png", p1, width = 6, height = 5, dpi = 300)
-ggsave("C50_OP_Typ.pdf", p1, width = 6, height = 5)
+ggsave(file.path(OUT, "C50_OP_Typ.png"), p1, width = 6, height = 5, dpi = 300)
+ggsave(file.path(OUT, "C50_OP_Typ.pdf"), p1, width = 6, height = 5)
 
 # Grafik 2: RT-Rate nach BET nach Altersgruppe
 p2 <- ggplot(rt_ag[!is.na(ag_gr)], aes(x = ag_gr, y = rt_rate)) +
@@ -304,8 +308,8 @@ p2 <- ggplot(rt_ag[!is.na(ag_gr)], aes(x = ag_gr, y = rt_rate)) +
        x = "Altersgruppe", y = "RT-Rate (%)") +
   theme_minimal(base_size = 13) +
   theme(plot.title = element_text(color = hh_dunkelblau, face = "bold"))
-ggsave("C50_RT_Rate_Altersgruppe.png", p2, width = 7, height = 5, dpi = 300)
-ggsave("C50_RT_Rate_Altersgruppe.pdf", p2, width = 7, height = 5)
+ggsave(file.path(OUT, "C50_RT_Rate_Altersgruppe.png"), p2, width = 7, height = 5, dpi = 300)
+ggsave(file.path(OUT, "C50_RT_Rate_Altersgruppe.pdf"), p2, width = 7, height = 5)
 
 # Grafik 3: Histogramm Abstand OP -> RT
 if (nrow(dat_rt) > 0) {
@@ -320,8 +324,8 @@ if (nrow(dat_rt) > 0) {
     theme_minimal(base_size = 13) +
     theme(plot.title    = element_text(color = hh_dunkelblau, face = "bold"),
           plot.subtitle = element_text(color = hh_dunkelgrau))
-  ggsave("C50_Abstand_OP_RT.png", p3, width = 7, height = 5, dpi = 300)
-  ggsave("C50_Abstand_OP_RT.pdf", p3, width = 7, height = 5)
+  ggsave(file.path(OUT, "C50_Abstand_OP_RT.png"), p3, width = 7, height = 5, dpi = 300)
+  ggsave(file.path(OUT, "C50_Abstand_OP_RT.pdf"), p3, width = 7, height = 5)
 }
 
 # ============================================================
@@ -382,9 +386,9 @@ if (length(gpkg_pfad) > 0 && file.exists(gpkg_pfad)) {
       plot.margin   = margin(12, 12, 12, 12)
     )
 
-  ggsave("C50_Karte_HH_RT_Rate.png", p_karte, width = 7, height = 9, dpi = 300)
-  ggsave("C50_Karte_HH_RT_Rate.pdf", p_karte, width = 7, height = 9)
-  cat("Karte gespeichert: C50_Karte_HH_RT_Rate.png\n")
+  ggsave(file.path(OUT, "C50_Karte_HH_RT_Rate.png"), p_karte, width = 7, height = 9, dpi = 300)
+  ggsave(file.path(OUT, "C50_Karte_HH_RT_Rate.pdf"), p_karte, width = 7, height = 9)
+  cat("Karte gespeichert:", file.path(OUT, "C50_Karte_HH_RT_Rate.png"), "\n")
 } else {
   cat("Shapefile nicht gefunden – Karte uebersprungen.\n")
 }
@@ -436,6 +440,6 @@ if (nrow(dat_rt) > 0) {
   ))
 }
 
-saveWorkbook(wb, "C50_BET_RT_Analyse.xlsx", overwrite = TRUE)
-cat("Excel gespeichert: C50_BET_RT_Analyse.xlsx\n")
-cat("\nFertig.\n")
+saveWorkbook(wb, file.path(OUT, "C50_BET_RT_Analyse.xlsx"), overwrite = TRUE)
+cat("Excel gespeichert:", file.path(OUT, "C50_BET_RT_Analyse.xlsx"), "\n")
+cat("\nFertig. Outputs in:", OUT, "\n")

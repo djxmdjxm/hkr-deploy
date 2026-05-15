@@ -33,8 +33,8 @@ hh_rot        <- "#E10019"
 hh_grau       <- "#757575"
 farben_subtyp <- c(C50 = hh_blau, C34 = hh_rot, C43 = "#16A34A")
 
-# Output-Verzeichnis (relativ zum Skript)
-OUT <- file.path(getwd(), "outputs")
+PROJ <- "/home/rstudio/projekte/2026-MET-Hirnmetastasen"
+OUT  <- file.path(PROJ, "outputs")
 dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
 cat("Outputs nach:", OUT, "\n\n")
 
