@@ -523,23 +523,32 @@ library(ggplot2)
 arch_png = tempfile(fileext = ".png")
 
 arch_p = local({
+  # 9 Container in 4 Schichten
+  # Schicht 1 (Frontend):   y 7.1 - 8.4
+  # Schicht 2 (Backend):    y 5.0 - 6.3
+  # Schicht 3 (Migration):  y 3.5 - 4.4  (einmalig, restart:no)
+  # Schicht 4 (Analyse):    y 1.1 - 2.6
   boxes = data.frame(
-    xmin  = c(0.75, 2.5,  5.9,   0.05, 3.15, 6.35,  0.05),
-    xmax  = c(2.4,  5.8,  9.95,  3.05, 6.25, 9.95,  9.95),
-    ymin  = c(5.85, 5.85, 5.85,  3.15, 3.15, 3.15,  0.65),
-    ymax  = c(7.35, 7.35, 7.35,  4.65, 4.65, 4.65,  2.25),
+    xmin  = c(0.75, 2.5,  5.9,   0.05, 3.15, 6.35,  0.05, 5.05,  0.05),
+    xmax  = c(2.4,  5.8,  9.95,  3.05, 6.25, 9.95,  4.95, 9.95,  9.95),
+    ymin  = c(7.1,  7.1,  7.1,   5.0,  5.0,  5.0,   3.5,  3.5,   1.1),
+    ymax  = c(8.4,  8.4,  8.4,   6.3,  6.3,  6.3,   4.4,  4.4,   2.6),
     label = c("ingress", "krebs-web", "krebs-api",
               "job-queue", "import-worker", "central-db",
+              "krebs-db-migrations", "main-db-migrations",
               "krebs-code"),
-    sub   = c("nginx\nPort 8090 → 80",
+    sub   = c("nginx · Port 8090 → 80",
               "Next.js 15 / React 19\nTypeScript / Tailwind 4",
               "FastAPI / Python 3.12\nUpload · Auth · Reports",
               "Redis\nMessage Queue",
               "Python 3.12-Alpine\nXSD-Validierung · DB-Import",
               "PostgreSQL\nmain_db + krebs_db",
-              "RStudio Server · Port 8091   —   R 4.4   —   ggplot2, survival, data.table, metafor, lme4, officer"),
+              "Schema-Migration krebs_db\neinmalig (restart: no)",
+              "Schema-Migration main_db\neinmalig (restart: no)",
+              "RStudio Server · Port 8091  —  R 4.4  —  ggplot2, survival, data.table, metafor, lme4, officer"),
     fill  = c("#546E7A", "#005CA9", "#003063",
               "#E65100", "#37474F", "#4E342E",
+              "#78909C", "#78909C",
               "#B71C1C"),
     stringsAsFactors = FALSE
   )
@@ -547,83 +556,94 @@ arch_p = local({
   boxes$yc  = (boxes$ymin + boxes$ymax) / 2
 
   sl = data.frame(
-    x   = c(5, 5, 5),
-    y   = c(7.9, 5.2, 2.65),
+    x   = c(5, 5, 5, 5),
+    y   = c(8.85, 6.72, 4.8, 3.12),
     txt = c("NUTZER- & FRONTEND-SCHICHT",
             "BACKEND- & QUEUE-SCHICHT",
+            "MIGRATIONS  (einmalig · restart: no)",
             "ANALYSE-SCHICHT  (direkter DB-Zugriff über krebs-net)")
   )
 
   ggplot() +
     # Zeilen-Hintergrund
-    annotate("rect", xmin = 0, xmax = 10, ymin = 5.55, ymax = 7.65,
-             fill = "#EEF2F5", color = NA) +
-    annotate("rect", xmin = 0, xmax = 10, ymin = 2.85, ymax = 4.95,
-             fill = "#FFF8EC", color = NA) +
-    annotate("rect", xmin = 0, xmax = 10, ymin = 0.35, ymax = 2.55,
-             fill = "#FFF0F0", color = NA) +
+    annotate("rect", xmin = 0, xmax = 10, ymin = 6.8,  ymax = 8.65, fill = "#EEF2F5", color = NA) +
+    annotate("rect", xmin = 0, xmax = 10, ymin = 4.7,  ymax = 6.55, fill = "#FFF8EC", color = NA) +
+    annotate("rect", xmin = 0, xmax = 10, ymin = 3.25, ymax = 4.65, fill = "#F1F8E9", color = NA) +
+    annotate("rect", xmin = 0, xmax = 10, ymin = 0.8,  ymax = 2.85, fill = "#FFF0F0", color = NA) +
     # Container-Boxen
     geom_rect(data = boxes,
               aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = fill),
               color = "white", linewidth = 0.7) +
+    # Migrations-Boxen: gestrichelter Rand als visueller Hinweis "einmalig"
+    annotate("rect", xmin = 0.05, xmax = 4.95, ymin = 3.5, ymax = 4.4,
+             fill = NA, color = "white", linewidth = 0.5, linetype = "dashed") +
+    annotate("rect", xmin = 5.05, xmax = 9.95, ymin = 3.5, ymax = 4.4,
+             fill = NA, color = "white", linewidth = 0.5, linetype = "dashed") +
     scale_fill_identity() +
     # Container-Namen
-    geom_text(data = boxes, aes(x = xc, y = yc + 0.40, label = label),
-              color = "white", fontface = "bold", size = 3.6, hjust = 0.5) +
+    geom_text(data = boxes, aes(x = xc, y = yc + 0.35, label = label),
+              color = "white", fontface = "bold", size = 3.2, hjust = 0.5) +
     # Sub-Labels
-    geom_text(data = boxes, aes(x = xc, y = yc - 0.22, label = sub),
-              color = "#E0E0E0", size = 2.35, hjust = 0.5, lineheight = 0.88) +
+    geom_text(data = boxes, aes(x = xc, y = yc - 0.2, label = sub),
+              color = "#E0E0E0", size = 2.2, hjust = 0.5, lineheight = 0.88) +
     # Schicht-Labels
     geom_text(data = sl, aes(x = x, y = y, label = txt),
-              color = "#607D8B", size = 2.4, fontface = "bold", hjust = 0.5) +
-    # Pfeile: Browser -> ingress
-    annotate("text", x = 0.1, y = 6.6, label = "Browser\n►",
-             hjust = 0, size = 2.0, color = "#607D8B", lineheight = 0.8) +
-    annotate("segment", x = 0.72, xend = 0.74, y = 6.6, yend = 6.6,
-             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+              color = "#607D8B", size = 2.3, fontface = "bold", hjust = 0.5) +
+    # ── Pfeile ──
+    # Browser → ingress
+    annotate("text",    x = 0.1,  y = 7.75, label = "Browser\n►",
+             hjust = 0, size = 1.9, color = "#607D8B", lineheight = 0.8) +
+    annotate("segment", x = 0.72, xend = 0.74, y = 7.75, yend = 7.75,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
              color = "#90A4AE", linewidth = 0.7) +
-    # ingress -> krebs-web
-    annotate("segment", x = 2.41, xend = 2.49, y = 6.6, yend = 6.6,
-             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+    # ingress → krebs-web
+    annotate("segment", x = 2.41, xend = 2.49, y = 7.75, yend = 7.75,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
              color = "#90A4AE", linewidth = 0.7) +
-    # krebs-web <-> krebs-api
-    annotate("segment", x = 5.82, xend = 5.88, y = 6.6, yend = 6.6,
-             arrow = arrow(length = unit(0.18, "cm"), type = "closed", ends = "both"),
+    # krebs-web ↔ krebs-api
+    annotate("segment", x = 5.82, xend = 5.88, y = 7.75, yend = 7.75,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed", ends = "both"),
              color = "#90A4AE", linewidth = 0.7) +
-    # krebs-api -> job-queue (Upload-Job einreihen, diagonal gestrichelt)
-    annotate("segment", x = 6.5, xend = 3.0, y = 5.85, yend = 4.65,
-             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
-             color = "#90A4AE", linewidth = 0.55, linetype = "dashed") +
-    # krebs-api -> central-db (direkt)
-    annotate("segment", x = 8.15, xend = 8.15, y = 5.85, yend = 4.65,
-             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+    # krebs-api → job-queue (gestrichelt, diagonal)
+    annotate("segment", x = 6.5, xend = 3.0, y = 7.1, yend = 6.3,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
+             color = "#90A4AE", linewidth = 0.5, linetype = "dashed") +
+    # krebs-api → central-db (vertikal)
+    annotate("segment", x = 8.15, xend = 8.15, y = 7.1, yend = 6.3,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
              color = "#90A4AE", linewidth = 0.7) +
-    # job-queue -> import-worker
-    annotate("segment", x = 3.06, xend = 3.13, y = 3.9, yend = 3.9,
-             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+    # job-queue → import-worker
+    annotate("segment", x = 3.06, xend = 3.13, y = 5.65, yend = 5.65,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
              color = "#90A4AE", linewidth = 0.7) +
-    # import-worker -> central-db
-    annotate("segment", x = 6.26, xend = 6.33, y = 3.9, yend = 3.9,
-             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+    # import-worker → central-db
+    annotate("segment", x = 6.26, xend = 6.33, y = 5.65, yend = 5.65,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
              color = "#90A4AE", linewidth = 0.7) +
-    # krebs-code <-> central-db (Analyse, doppelt)
-    annotate("segment", x = 8.15, xend = 8.15, y = 2.25, yend = 3.15,
-             arrow = arrow(length = unit(0.18, "cm"), type = "closed", ends = "both"),
+    # krebs-db-migrations → central-db (diagonal hoch rechts)
+    annotate("segment", x = 4.95, xend = 6.35, y = 3.95, yend = 5.0,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
+             color = "#AED581", linewidth = 0.6, linetype = "dotted") +
+    # main-db-migrations → central-db (vertikal)
+    annotate("segment", x = 8.15, xend = 8.15, y = 4.4, yend = 5.0,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
+             color = "#AED581", linewidth = 0.6, linetype = "dotted") +
+    # krebs-code ↔ central-db (rechts vorbei an Migrations-Schicht)
+    annotate("segment", x = 9.7, xend = 9.7, y = 2.6, yend = 5.0,
+             arrow = arrow(length = unit(0.15, "cm"), type = "closed", ends = "both"),
              color = "#E57373", linewidth = 0.8) +
     # Pfeil-Labels
-    annotate("text", x = 4.8, y = 5.4, label = "Job\nenqueue",
-             size = 1.9, color = "#90A4AE", hjust = 0.5, lineheight = 0.8) +
-    annotate("text", x = 8.5, y = 5.25, label = "R/W",
-             size = 2.0, color = "#90A4AE", hjust = 0) +
-    annotate("text", x = 8.5, y = 2.7, label = "Analyse\n(R/W)",
-             size = 2.0, color = "#E57373", hjust = 0, lineheight = 0.85) +
+    annotate("text", x = 4.6,  y = 6.85, label = "Job enqueue",
+             size = 1.8, color = "#90A4AE", hjust = 0.5) +
+    annotate("text", x = 8.45, y = 6.85, label = "R/W",
+             size = 1.9, color = "#90A4AE", hjust = 0) +
+    annotate("text", x = 9.75, y = 3.8,  label = "Analyse\nR/W",
+             size = 1.9, color = "#E57373", hjust = 0, lineheight = 0.85) +
     # Footer
-    annotate("text", x = 5, y = 0.12,
-             label = paste0("Docker-Netzwerk krebs-net  ·  Volumes: krebs-db (DB-Daten),",
-                            " upload-data (XML-Uploads)  ·  Migrationen: krebs-db-migrations",
-                            " + main-db-migrations (restart: no)"),
+    annotate("text", x = 5, y = 0.2,
+             label = "Docker-Netzwerk krebs-net  ·  Volumes: krebs-db (DB-Daten), upload-data (XML-Uploads)",
              size = 1.8, color = "#9E9E9E", hjust = 0.5) +
-    xlim(0, 10) + ylim(0, 8.3) +
+    xlim(0, 10) + ylim(0, 9.1) +
     theme_void() +
     theme(plot.background = element_rect(fill = "white", color = NA),
           plot.margin = margin(4, 6, 2, 6))
