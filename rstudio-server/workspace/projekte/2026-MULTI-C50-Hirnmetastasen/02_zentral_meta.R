@@ -19,6 +19,7 @@ source("00_config.R")
 pkgs = c("data.table", "survival", "ggplot2", "scales",
          "metafor",    # Two-Stage Meta-Analyse
          "lme4",       # Poisson Mixed Model
+         "broom",      # GLM-Koeffizienten (Einzelregister-Fallback)
          "gridExtra", "grid")
 pkgs_optional = c("INLA")  # Bayesianische Glättung — separat installieren falls nötig
 
@@ -112,7 +113,7 @@ p_km_pool = ggplot(km_os_pool[!is.na(surv)],
                      name   = "Gesamtüberleben") +
   labs(
     title    = "Gepooltes Gesamtüberleben nach molekularem Subtyp",
-    subtitle = paste0("Kaplan-Meier | N = ", format(n_gesamt, big.mark = "."),
+    subtitle = paste0("Kaplan-Meier | N = ", suppressWarnings(formatC(n_gesamt, format = "d", big.mark = ".")),
                       " Patientinnen | ", n_register, " Landeskrebsregister\n",
                       "Zensierung bei 60 Monaten | Federated Analysis"),
     caption  = "Schraffierter Bereich: 95%-KI (Greenwood) | HKR-KIKA Multi-Register"
@@ -146,7 +147,7 @@ p_cuminc_pool = ggplot(km_bm_pool[!is.na(cuminc)],
                      name   = "Kumulative Inzidenz Hirnmetastasen") +
   labs(
     title    = "Kumulative Inzidenz von Hirnmetastasen nach Subtyp",
-    subtitle = paste0("Cause-Specific Hazard | N = ", format(n_gesamt, big.mark = "."),
+    subtitle = paste0("Cause-Specific Hazard | N = ", suppressWarnings(formatC(n_gesamt, format = "d", big.mark = ".")),
                       " Patientinnen | ", n_register, " Landeskrebsregister"),
     caption  = "Federated Analysis: gepoolte Event-Tabellen aus 15 Registern | HKR-KIKA"
   ) +
@@ -183,7 +184,17 @@ meta_cox = function(cox_liste_name, endpoint_label) {
   variablen = unique(cox_daten$variable)
   ergebnisse = rbindlist(lapply(variablen, function(v) {
     sub_dat = cox_daten[variable == v]
-    if (nrow(sub_dat) < 2) return(NULL)
+    if (nrow(sub_dat) == 0) return(NULL)
+    if (nrow(sub_dat) == 1) {
+      # Einzelregister: KI direkt aus Koeffizient + SE
+      return(data.table(
+        endpoint   = endpoint_label, variable  = v,
+        HR         = round(exp(sub_dat$coef), 3),
+        HR_lower   = round(exp(sub_dat$coef - 1.96 * sub_dat$se), 3),
+        HR_upper   = round(exp(sub_dat$coef + 1.96 * sub_dat$se), 3),
+        p_val      = NA_real_, I2 = NA_real_, n_register = 1L
+      ))
+    }
     tryCatch({
       ma = rma(yi = coef, sei = se, data = sub_dat, method = "REML")
       data.table(
@@ -210,36 +221,44 @@ print(cox_meta_tab)
 fwrite(cox_meta_tab, "MULTI_Cox_Meta_Ergebnisse.csv", sep = ";", bom = TRUE)
 
 # Forest-Plot: Subtyp-HRs für Gesamtüberleben
-fp_dat = cox_os_meta[grepl("subtyp", variable)]
-fp_dat[, variable := sub("subtyp", "", variable)]
-fp_dat[, variable := factor(variable, levels = rev(unique(variable)))]
+if (!is.null(cox_os_meta) && nrow(cox_os_meta) > 0 && "variable" %in% names(cox_os_meta)) {
+  fp_dat = cox_os_meta[grepl("subtyp", variable)]
+  if (nrow(fp_dat) > 0) {
+    fp_dat[, variable  := sub("subtyp", "", variable)]
+    fp_dat[, variable  := factor(variable, levels = rev(unique(variable)))]
+    fp_dat[, I2_label  := ifelse(is.na(I2), "—", paste0("I²=", I2, "%"))]
 
-p_forest = ggplot(fp_dat, aes(y = variable, x = HR, xmin = HR_lower, xmax = HR_upper)) +
-  geom_vline(xintercept = 1, linetype = "dashed", color = hh_dunkelgrau, linewidth = 0.6) +
-  geom_errorbarh(height = 0.25, color = hh_dunkelblau, linewidth = 0.7) +
-  geom_point(size = 3.5, color = hh_blau, shape = 18) +
-  geom_text(aes(label = sprintf("%.2f [%.2f–%.2f]", HR, HR_lower, HR_upper)),
-            hjust = -0.12, size = 3.2, color = "#333333") +
-  geom_text(aes(x = max(HR_upper) * 1.6, y = variable,
-                label = paste0("I²=", I2, "%")),
-            hjust = 1, size = 3.0, color = hh_dunkelgrau) +
-  scale_x_continuous(
-    trans  = "log",
-    breaks = c(0.5, 1, 2, 4, 8),
-    limits = c(0.3, max(fp_dat$HR_upper) * 2.2),
-    name   = "Hazard Ratio (95%-KI) — log-Skala"
-  ) +
-  labs(
-    title    = "Two-Stage Meta-Analyse: Gesamtüberleben nach Subtyp",
-    subtitle = paste0("Cox Proportional Hazards | Random Effects (REML) | ",
-                      n_register, " Register\nReferenz: HR+/HER2-"),
-    y        = NULL,
-    caption  = paste0("I² = Heterogenität zwischen Registern | HKR-KIKA Multi-Register")
-  ) +
-  theme_hkr() +
-  theme(panel.grid.major.y = element_line(color = hh_grau, linewidth = 0.3))
+    p_forest = ggplot(fp_dat, aes(y = variable, x = HR, xmin = HR_lower, xmax = HR_upper)) +
+      geom_vline(xintercept = 1, linetype = "dashed", color = hh_dunkelgrau, linewidth = 0.6) +
+      geom_errorbarh(height = 0.25, color = hh_dunkelblau, linewidth = 0.7) +
+      geom_point(size = 3.5, color = hh_blau, shape = 18) +
+      geom_text(aes(label = sprintf("%.2f [%.2f–%.2f]", HR, HR_lower, HR_upper)),
+                hjust = -0.12, size = 3.2, color = "#333333") +
+      geom_text(aes(x = max(HR_upper) * 1.6, y = variable, label = I2_label),
+                hjust = 1, size = 3.0, color = hh_dunkelgrau) +
+      scale_x_continuous(
+        trans  = "log",
+        breaks = c(0.5, 1, 2, 4, 8),
+        limits = c(0.3, max(fp_dat$HR_upper) * 2.2),
+        name   = "Hazard Ratio (95%-KI) — log-Skala"
+      ) +
+      labs(
+        title    = "Two-Stage Meta-Analyse: Gesamtüberleben nach Subtyp",
+        subtitle = paste0("Cox Proportional Hazards | Random Effects (REML) | ",
+                          n_register, " Register\nReferenz: HR+/HER2-"),
+        y        = NULL,
+        caption  = "I² = Heterogenität zwischen Registern | HKR-KIKA Multi-Register"
+      ) +
+      theme_hkr() +
+      theme(panel.grid.major.y = element_line(color = hh_grau, linewidth = 0.3))
 
-save_png(p_forest, "MULTI_Fig3_Forest_Cox_OS.png", breite = 10, hoehe = 5)
+    save_png(p_forest, "MULTI_Fig3_Forest_Cox_OS.png", breite = 10, hoehe = 5)
+  } else {
+    cat("Forest-Plot: Keine Subtyp-Variablen in Cox-Meta-Ergebnissen.\n")
+  }
+} else {
+  cat("Forest-Plot: Cox-Meta-Analyse ohne auswertbares Ergebnis (ggf. zu wenige Register).\n")
+}
 
 # ============================================================
 # ANALYSE D: POISSON-TRENDMODELL (Inzidenztrend nach Jahr)
@@ -255,33 +274,83 @@ poisson_all[, alter_grp := factor(alter_grp, levels = ALTERS_LABELS)]
 poisson_all[, register  := factor(register)]
 
 tryCatch({
-  glmm_fit = glmer(
-    n_bm ~ subtyp + alter_grp + diagnosejahr_z + (1 | register),
-    offset   = log(py),
-    family   = poisson(link = "log"),
-    data     = poisson_all
-  )
+  if (n_register == 1) {
+    # Einzelregister: Marginalmodell (summiere über Altersgruppen)
+    # Hinweis: DSGVO-Suppression auf Zellebene kann bei wenig Registern zu artifiziellen
+    # Nullzellen führen, daher Fallback auf deskriptive Darstellung.
+    pois_marg = poisson_all[, .(
+      n_bm = sum(n_bm, na.rm = TRUE),
+      py   = sum(py,   na.rm = TRUE)
+    ), by = .(subtyp, diagnosejahr_z)]
+    pois_marg = pois_marg[py >= 0.5]  # mind. 6 Monate Exposition
+    pois_marg = droplevels(pois_marg)
 
-  glmm_coef = as.data.table(broom.mixed::tidy(glmm_fit, conf.int = TRUE))
-  glmm_coef[, IRR       := round(exp(estimate), 3)]
-  glmm_coef[, IRR_lower := round(exp(conf.low),  3)]
-  glmm_coef[, IRR_upper := round(exp(conf.high), 3)]
+    # Stichprobe: Zeilen mit Ereignissen
+    n_mit_ereignissen = sum(pois_marg$n_bm > 0)
+    cat("Poisson-Daten: ", nrow(pois_marg), "Zellen, davon",
+        n_mit_ereignissen, "mit n_bm > 0\n")
 
-  cat("\nPoisson GLMM — Inzidenz-Rate-Ratios:\n")
-  print(glmm_coef[, .(term, IRR, IRR_lower, IRR_upper, p.value)])
-  fwrite(glmm_coef, "MULTI_Poisson_GLMM_Ergebnisse.csv", sep = ";", bom = TRUE)
+    xmat    = model.matrix(~ subtyp + diagnosejahr_z, data = pois_marg)
+    glm_fit = glm(
+      n_bm ~ subtyp + diagnosejahr_z,
+      offset  = log(py),
+      family  = poisson(link = "log"),
+      data    = pois_marg,
+      start   = rep(0, ncol(xmat)),
+      control = glm.control(maxit = 500, epsilon = 1e-10)
+    )
+    glmm_coef = as.data.table(broom::tidy(glm_fit, conf.int = TRUE))
+    glmm_coef[, IRR       := round(exp(estimate), 3)]
+    glmm_coef[, IRR_lower := round(exp(conf.low),  3)]
+    glmm_coef[, IRR_upper := round(exp(conf.high), 3)]
 
-  # Trendgrafik: vorhergesagte BM-Rate nach Jahr und Subtyp (Altersgruppe 50-59 fixiert)
-  pred_grid = CJ(
-    subtyp       = factor(levels(poisson_all$subtyp)[1:4], levels = subtyp_levels),
-    alter_grp    = factor("50-59", levels = ALTERS_LABELS),
-    diagnosejahr_z = seq(JAHRE_VON - 2015, JAHRE_BIS - 2015),
-    register     = levels(poisson_all$register)[1],
-    py           = 100
-  )
-  pred_grid[, pred_rate := predict(glmm_fit, newdata = pred_grid,
-                                   type = "response", re.form = NA) / 100 * 1000]
-  pred_grid[, diagnosejahr := diagnosejahr_z + 2015]
+    cat("\nPoisson GLM (Einzelregister, Marginalmodell) — Inzidenz-Rate-Ratios:\n")
+    print(glmm_coef[, .(term, IRR, IRR_lower, IRR_upper, p.value)])
+    fwrite(glmm_coef, "MULTI_Poisson_GLMM_Ergebnisse.csv", sep = ";", bom = TRUE)
+
+    pred_grid = CJ(
+      subtyp         = factor(levels(pois_marg$subtyp)[1:4], levels = subtyp_levels),
+      diagnosejahr_z = seq(JAHRE_VON - 2015, JAHRE_BIS - 2015),
+      py             = 1000
+    )
+    pred_grid[, pred_rate := predict(glm_fit, newdata = pred_grid, type = "response")]
+    pred_grid[, diagnosejahr := diagnosejahr_z + 2015]
+
+    trend_subtitle = "Poisson GLM | Einzelregister | Marginale Rate pro 1.000 Patientenjahre"
+    trend_caption  = "Modell: n_bm ~ subtyp + diagnosejahr | HKR-KIKA"
+
+  } else {
+    # Mehrere Register: Gemischtes Modell mit Register als Random Effect
+    glmm_fit = glmer(
+      n_bm ~ subtyp + alter_grp + diagnosejahr_z + (1 | register),
+      offset   = log(py),
+      family   = poisson(link = "log"),
+      data     = poisson_all
+    )
+    glmm_coef = as.data.table(broom.mixed::tidy(glmm_fit, conf.int = TRUE))
+    glmm_coef[, IRR       := round(exp(estimate), 3)]
+    glmm_coef[, IRR_lower := round(exp(conf.low),  3)]
+    glmm_coef[, IRR_upper := round(exp(conf.high), 3)]
+
+    cat("\nPoisson GLMM — Inzidenz-Rate-Ratios:\n")
+    print(glmm_coef[, .(term, IRR, IRR_lower, IRR_upper, p.value)])
+    fwrite(glmm_coef, "MULTI_Poisson_GLMM_Ergebnisse.csv", sep = ";", bom = TRUE)
+
+    pred_grid = CJ(
+      subtyp         = factor(levels(poisson_all$subtyp)[1:4], levels = subtyp_levels),
+      alter_grp      = factor("50-59", levels = ALTERS_LABELS),
+      diagnosejahr_z = seq(JAHRE_VON - 2015, JAHRE_BIS - 2015),
+      register       = levels(poisson_all$register)[1],
+      py             = 100
+    )
+    pred_grid[, pred_rate := predict(glmm_fit, newdata = pred_grid,
+                                     type = "response", re.form = NA) / 100 * 1000]
+    pred_grid[, diagnosejahr := diagnosejahr_z + 2015]
+
+    trend_subtitle = paste0("Poisson GLMM | Register als Random Effect | ",
+                            n_register, " Register\nAltersgruppe 50–59 Jahre, Rate pro 1.000 Patientenjahre")
+    trend_caption  = "Modell: n_bm ~ subtyp + alter_grp + diagnosejahr + (1|register) | HKR-KIKA"
+  }
 
   p_trend = ggplot(pred_grid, aes(x = diagnosejahr, y = pred_rate, color = subtyp)) +
     geom_line(linewidth = 1) +
@@ -289,19 +358,49 @@ tryCatch({
     scale_x_continuous(breaks = seq(JAHRE_VON, JAHRE_BIS, 2)) +
     labs(
       title    = "Zeittrend der Hirnmetastasen-Rate nach Subtyp",
-      subtitle = paste0("Poisson GLMM | Register als Random Effect | ",
-                        n_register, " Register\nAltersgruppe 50–59 Jahre, Rate pro 1.000 Patientenjahre"),
+      subtitle = trend_subtitle,
       x        = "Diagnosejahr",
       y        = "Vorhergesagte BM-Rate (pro 1.000 PJ)",
-      caption  = "Modell: n_bm ~ subtyp + alter_grp + diagnosejahr + (1|register) | HKR-KIKA"
+      caption  = trend_caption
     ) +
     theme_hkr()
 
   save_png(p_trend, "MULTI_Fig4_Poisson_Trend.png", breite = 11, hoehe = 7)
 
 }, error = function(e) {
-  cat("Poisson GLMM nicht möglich (ggf. broom.mixed installieren):",
-      conditionMessage(e), "\n")
+  cat("Poisson-Modell nicht konvergiert:", conditionMessage(e), "\n")
+  cat("  -> Fallback: beobachtete BM-Raten (kein Modell)\n")
+  # Stub-CSV damit die Datei existiert
+  fwrite(data.table(hinweis = "Poisson-Modell nicht konvergiert (zu wenige Ereignisse nach DSGVO-Suppression)"),
+         "MULTI_Poisson_GLMM_Ergebnisse.csv", sep = ";", bom = TRUE)
+
+  # Beobachtete Rate: Rohrate pro 1.000 Patientenjahre je Subtyp und Jahr
+  pois_obs = poisson_all[, .(
+    n_bm = sum(n_bm, na.rm = TRUE),
+    py   = sum(py,   na.rm = TRUE)
+  ), by = .(subtyp, diagnosejahr_z)]
+  pois_obs = pois_obs[py >= 1]
+  pois_obs[, rate         := n_bm / py * 1000]
+  pois_obs[, diagnosejahr := diagnosejahr_z + 2015]
+  pois_obs[, subtyp       := factor(subtyp, levels = subtyp_levels)]
+
+  p_trend = ggplot(pois_obs[subtyp != "Unbekannt"],
+                   aes(x = diagnosejahr, y = rate, color = subtyp)) +
+    geom_point(alpha = 0.6, size = 2.5) +
+    geom_smooth(method = "loess", se = FALSE, linewidth = 0.9, span = 0.8) +
+    scale_color_manual(values = subtyp_farben, name = "Molekularer Subtyp") +
+    scale_x_continuous(breaks = seq(JAHRE_VON, JAHRE_BIS, 2)) +
+    labs(
+      title    = "Zeittrend der Hirnmetastasen-Rate nach Subtyp",
+      subtitle = paste0("Beobachtete Rohraten (Loess-Glättung) | ",
+                        n_register, " Register | Aggregiert über Altersgruppen"),
+      x        = "Diagnosejahr",
+      y        = "BM-Rate (pro 1.000 Patientenjahre)",
+      caption  = "Hinweis: DSGVO-Suppression kann Nullzellen erzeugen — Werte < 5 Ereignisse supprimiert | HKR-KIKA"
+    ) +
+    theme_hkr()
+
+  save_png(p_trend, "MULTI_Fig4_Poisson_Trend.png", breite = 11, hoehe = 7)
 })
 
 # ============================================================
@@ -354,8 +453,8 @@ if (inla_verfuegbar) {
     labs(
       title    = "Bayesianisch geglätteter Zeittrend: Hirnmetastasen-Rate",
       subtitle = paste0("INLA RW1-Modell | Gesamter Zeittrend (alle Subtypen)\n",
-                        n_register, " Register | ", format(sum(inla_dat$n_bm), big.mark="."),
-                        " BM-Ereignisse"),
+                        n_register, " Register | ", formatC(sum(inla_dat$n_bm), format = "d", big.mark = "."),
+                        " BM-Ereignisse (INLA)"),
       x        = "Diagnosejahr",
       y        = "Relatives Risiko (vs. Gesamtmittel)",
       caption  = "Schraffierter Bereich: 95%-Kredibilitätsintervall | HKR-KIKA Multi-Register"
@@ -398,7 +497,7 @@ fwrite(desk_gesamt, "MULTI_Deskriptiv_Gesamt.csv", sep = ";", bom = TRUE)
 # ============================================================
 cat("\n========== ZENTRALE ANALYSE ABGESCHLOSSEN ==========\n")
 cat("Register analysiert:", n_register, "\n")
-cat("N gesamt (alle Register):", format(n_gesamt, big.mark = "."), "\n")
+cat("N gesamt (alle Register):", suppressWarnings(suppressWarnings(formatC(n_gesamt, format = "d", big.mark = "."))), "\n")
 cat("\nGespeicherte Dateien:\n")
 cat("  MULTI_Fig1_KM_OS_gepoolte.png\n")
 cat("  MULTI_Fig2_CumInc_BM_gepoolte.png\n")
