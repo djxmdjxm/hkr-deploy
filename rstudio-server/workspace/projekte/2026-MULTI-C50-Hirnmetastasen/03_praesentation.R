@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # KIKA – Federated Multi-Register-Analyse: C50 Hirnmetastasen
 # 03_praesentation.R — Erstellt PowerPoint-Präsentation zum Prozess
 #
@@ -56,7 +56,7 @@ fmt_bullet = function(text, sz = 13, color = "#222222", indent = 0.3) {
   fpar(
     ftext(paste0("•  ", text),
           fp_text(font.size = sz, color = color, font.family = FONT_TEXT)),
-    fp_p = fp_par(padding.left = inch(indent))
+    fp_p = fp_par(padding.left = round(indent * 72))
   )
 }
 
@@ -64,7 +64,7 @@ fmt_bullet2 = function(text, sz = 12, color = HH_DUNKELGRAU) {
   fpar(
     ftext(paste0("    ◦  ", text),
           fp_text(font.size = sz, color = color, font.family = FONT_TEXT)),
-    fp_p = fp_par(padding.left = inch(0.6))
+    fp_p = fp_par(padding.left = 43)
   )
 }
 
@@ -133,7 +133,7 @@ prs = ph_with(prs,
     fpar(ftext("C50 Mammakarzinom – Hirnmetastasen-Analyse",
                fp_text(font.size = 18, color = HH_DUNKELGRAU,
                        font.family = FONT_TEXT))),
-    fpar(ftext(""),fp_p = fp_par(space.before = 80)),
+    fpar(ftext("")),
     fpar(ftext("Methodisches Konzept | Datenschutz | Skriptstruktur",
                fp_text(font.size = 14, color = HH_DUNKELGRAU,
                        font.family = FONT_TEXT)))
@@ -164,21 +164,21 @@ prs = ph_with(prs,
   value = block_list(
     fpar(ftext("Epidemiologische Fragestellung", fp_text(font.size = 15, bold = TRUE,
                color = HH_DUNKELBLAU, font.family = FONT_TITEL))),
-    fpar(ftext(""),fp_p = fp_par(space.before = 40)),
+    fpar(ftext("")),
     fmt_bullet("Unterscheidet sich die Hirnmetastasen-Rate bei C50 nach molekularem Subtyp?"),
     fmt_bullet("Gibt es einen zeitlichen Trend? Ist das Muster in allen Registern stabil?"),
     fmt_bullet("Methoden: Kaplan-Meier, Competing Risks (CIF), Cox-Regression, Poisson-Trend"),
-    fpar(ftext(""),fp_p = fp_par(space.before = 120)),
+    fpar(ftext("")),
     fpar(ftext("Herausforderung: Datenschutz & Dezentralisierung", fp_text(font.size = 15,
                bold = TRUE, color = HH_DUNKELBLAU, font.family = FONT_TITEL))),
-    fpar(ftext(""),fp_p = fp_par(space.before = 40)),
+    fpar(ftext("")),
     fmt_bullet("15 Landeskrebsregister — jedes unterliegt eigenen Datenschutzgesetzen"),
     fmt_bullet("Einzelfalldaten duerfen das jeweilige Register NICHT verlassen"),
     fmt_bullet("Herkoemmliche Datenpoolierung ist rechtlich nicht moeglich"),
-    fpar(ftext(""),fp_p = fp_par(space.before = 120)),
+    fpar(ftext("")),
     fpar(ftext("Loesung: Federated Analysis", fp_text(font.size = 15, bold = TRUE,
                color = HH_ROT, font.family = FONT_TITEL))),
-    fpar(ftext(""),fp_p = fp_par(space.before = 40)),
+    fpar(ftext("")),
     fmt_bullet("Nur aggregierte Summary Statistics verlassen das Register"),
     fmt_bullet("Methodisch aequivalent zur zentralisierten Analyse (exaktes Pooling)")
   ),
@@ -198,7 +198,7 @@ prs = ph_with(prs,
   value = block_list(
     fpar(ftext("NICHT erlaubt", fp_text(font.size = 14, bold = TRUE,
                color = HH_ROT, font.family = FONT_TITEL))),
-    fpar(ftext(""),fp_p = fp_par(space.before = 60)),
+    fpar(ftext("")),
     fmt_bullet("Patientenlisten oder Einzelfalldaten", sz = 12, color = "#333333"),
     fmt_bullet("Diagnose- und Verlaufsdaten je Patient", sz = 12, color = "#333333"),
     fmt_bullet("Zellen mit N < 5 (DSGVO-Mindestzahl)", sz = 12, color = "#333333"),
@@ -212,7 +212,7 @@ prs = ph_with(prs,
   value = block_list(
     fpar(ftext("ERLAUBT (aggregierte Statistiken)", fp_text(font.size = 14, bold = TRUE,
                color = "#2E7D32", font.family = FONT_TITEL))),
-    fpar(ftext(""),fp_p = fp_par(space.before = 60)),
+    fpar(ftext("")),
     fmt_bullet("KM-Ereignistabelle: t, n.risk, n.event", sz = 12, color = "#333333"),
     fmt_bullet("Cox-Koeffizientenvektor + Varianz-Kovarianz-Matrix", sz = 12, color = "#333333"),
     fmt_bullet("Counts + Personenjahre je Stratum (N >= 5)", sz = 12, color = "#333333"),
@@ -232,7 +232,7 @@ prs = ph_with(prs,
                fp_text(font.size = 14, bold = TRUE, color = WEISS,
                        font.family = FONT_TITEL)),
          fp_p = fp_par(text.align = "center")),
-    fpar(ftext(""),fp_p = fp_par(space.before = 40)),
+    fpar(ftext("")),
     fpar(ftext("Jedes Register fuehrt dieselben Skripte auf seinen eigenen Daten aus.",
                fp_text(font.size = 12, color = HH_GRAU, font.family = FONT_TEXT)),
          fp_p = fp_par(text.align = "center"))
@@ -298,7 +298,7 @@ prs = ph_with(prs,
   value = block_list(
     fpar(ftext("Zeitlicher Ablauf", fp_text(font.size = 13, bold = TRUE,
                color = HH_DUNKELBLAU, font.family = FONT_TITEL))),
-    fpar(ftext(""),fp_p = fp_par(space.before = 30)),
+    fpar(ftext("")),
     fpar(ftext(
       paste0(
         "Phase 1: Abstimmung Skripte & Kodierungen (alle Register, 4 Wochen)     |     ",
@@ -358,7 +358,7 @@ tab_rows = lapply(seq_len(nrow(export_tab)), function(i) {
       ftext(paste0("Verwendung: ", export_tab$Verwendung[i]),
             fp_text(font.size = 10, color = HH_DUNKELGRAU, font.family = FONT_TEXT))
     ),
-    fpar(ftext(""), fp_p = fp_par(space.before = 60))
+    fpar(ftext(""))
   )
 })
 
@@ -366,8 +366,7 @@ prs = ph_with(prs,
   value = do.call(block_list, c(
     list(fpar(ftext("Datei: {REGISTER}_export.rds (eine Datei je Register)",
                     fp_text(font.size = 12, bold = TRUE, color = HH_DUNKELGRAU,
-                            font.family = FONT_TEXT)),
-              fp_p = fp_par(space.before = 0, space.after = 80))),
+                            font.family = FONT_TEXT)))),
     unlist(tab_rows, recursive = FALSE)
   )),
   location = ft_loc)
@@ -418,7 +417,7 @@ for (m in methoden) {
     value = block_list(
       fpar(ftext(m$titel, fp_text(font.size = 13, bold = TRUE,
                                    color = HH_DUNKELBLAU, font.family = FONT_TITEL))),
-      fpar(ftext(""),fp_p = fp_par(space.before = 20)),
+      fpar(ftext("")),
       fmt_bullet(m$zeilen[1], sz = 11),
       fmt_bullet(m$zeilen[2], sz = 11),
       fmt_bullet(m$zeilen[3], sz = 11),
@@ -442,7 +441,7 @@ prs = ph_with(prs,
   value = block_list(
     fpar(ftext("Projektordner", fp_text(font.size = 13, bold = TRUE,
                color = HH_DUNKELBLAU, font.family = FONT_TITEL))),
-    fpar(ftext(""),fp_p = fp_par(space.before = 30)),
+    fpar(ftext("")),
     fpar(ftext("2026-MULTI-C50-Hirnmetastasen/",
                fp_text(font.size = 11, bold = TRUE, font.family = "Courier New",
                        color = "#333333"))),
@@ -470,19 +469,19 @@ prs = ph_with(prs,
   value = block_list(
     fpar(ftext("Wer fuehrt was aus?", fp_text(font.size = 13, bold = TRUE,
                color = HH_DUNKELBLAU, font.family = FONT_TITEL))),
-    fpar(ftext(""),fp_p = fp_par(space.before = 30)),
+    fpar(ftext("")),
     fpar(ftext("Jedes Register (lokal):", fp_text(font.size = 12, bold = TRUE,
                color = HH_BLAU, font.family = FONT_TEXT))),
     fmt_bullet("00_config.R sourct (shared definition)", sz = 11),
     fmt_bullet("01_lokal_export.R ausfuehren", sz = 11),
     fmt_bullet("exports/{REG}_export.rds an HKR senden", sz = 11),
-    fpar(ftext(""),fp_p = fp_par(space.before = 60)),
+    fpar(ftext("")),
     fpar(ftext("HKR (zentral):", fp_text(font.size = 12, bold = TRUE,
                color = HH_ROT, font.family = FONT_TEXT))),
     fmt_bullet("Alle RDS-Dateien in exports/ ablegen", sz = 11),
     fmt_bullet("02_zentral_meta.R ausfuehren", sz = 11),
     fmt_bullet("Alle Grafiken + CSVs werden erzeugt", sz = 11),
-    fpar(ftext(""),fp_p = fp_par(space.before = 60)),
+    fpar(ftext("")),
     fpar(ftext("Hinweis:", fp_text(font.size = 12, bold = TRUE,
                color = HH_DUNKELGRAU, font.family = FONT_TEXT))),
     fmt_bullet("00_config.R wird vorab abgestimmt und", sz = 11),
@@ -538,7 +537,7 @@ for (s in schritte) {
               fp_text(font.size = 13, bold = TRUE, color = HH_DUNKELBLAU,
                       font.family = FONT_TITEL))
       ),
-      fpar(ftext(""),fp_p = fp_par(space.before = 20)),
+      fpar(ftext("")),
       fmt_bullet(s$details[1], sz = 11),
       fmt_bullet(s$details[2], sz = 11),
       fmt_bullet(s$details[3], sz = 11)
