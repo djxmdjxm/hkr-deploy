@@ -374,33 +374,39 @@ tryCatch({
   fwrite(data.table(hinweis = "Poisson-Modell nicht konvergiert (zu wenige Ereignisse nach DSGVO-Suppression)"),
          "MULTI_Poisson_GLMM_Ergebnisse.csv", sep = ";", bom = TRUE)
 
-  # Beobachtete Rate: Rohrate pro 1.000 Patientenjahre je Subtyp und Jahr
-  pois_obs = poisson_all[, .(
-    n_bm = sum(n_bm, na.rm = TRUE),
-    py   = sum(py,   na.rm = TRUE)
-  ), by = .(subtyp, diagnosejahr_z)]
-  pois_obs = pois_obs[py >= 1]
-  pois_obs[, rate         := n_bm / py * 1000]
-  pois_obs[, diagnosejahr := diagnosejahr_z + 2015]
-  pois_obs[, subtyp       := factor(subtyp, levels = subtyp_levels)]
+  # Fallback: Deskriptive BM-Rate aus der Export-Tabelle (DSGVO-konform auf Subtyp-Ebene)
+  desk_fb = rbindlist(lapply(exporte, function(x) x$deskriptiv))
+  desk_fb = desk_fb[!is.na(n_bm) & subtyp != "Unbekannt"]
+  desk_fb[, subtyp   := factor(subtyp, levels = subtyp_levels)]
+  desk_fb[, bm_rate  := round(100 * n_bm / n_gesamt, 1)]
+  desk_fb = desk_fb[, .(
+    n_gesamt = sum(n_gesamt), n_bm = sum(n_bm), bm_rate = round(100 * sum(n_bm) / sum(n_gesamt), 1)
+  ), by = subtyp]
 
-  p_trend = ggplot(pois_obs[subtyp != "Unbekannt"],
-                   aes(x = diagnosejahr, y = rate, color = subtyp)) +
-    geom_point(alpha = 0.6, size = 2.5) +
-    geom_smooth(method = "loess", se = FALSE, linewidth = 0.9, span = 0.8) +
-    scale_color_manual(values = subtyp_farben, name = "Molekularer Subtyp") +
-    scale_x_continuous(breaks = seq(JAHRE_VON, JAHRE_BIS, 2)) +
-    labs(
-      title    = "Zeittrend der Hirnmetastasen-Rate nach Subtyp",
-      subtitle = paste0("Beobachtete Rohraten (Loess-Glättung) | ",
-                        n_register, " Register | Aggregiert über Altersgruppen"),
-      x        = "Diagnosejahr",
-      y        = "BM-Rate (pro 1.000 Patientenjahre)",
-      caption  = "Hinweis: DSGVO-Suppression kann Nullzellen erzeugen — Werte < 5 Ereignisse supprimiert | HKR-KIKA"
+  p_trend = ggplot(desk_fb, aes(x = subtyp, y = bm_rate, fill = subtyp)) +
+    geom_col(width = 0.62) +
+    geom_text(aes(label = paste0(bm_rate, "%")),
+              vjust = -0.5, size = 4, color = hh_dunkelblau, fontface = "bold") +
+    scale_fill_manual(values = subtyp_farben, guide = "none") +
+    scale_y_continuous(
+      limits = c(0, NA), expand = expansion(mult = c(0, 0.18)),
+      labels = function(x) paste0(x, "%"),
+      name   = "Kumulative BM-Inzidenz"
     ) +
-    theme_hkr()
+    labs(
+      title    = "Hirnmetastasen-Rate nach molekularem Subtyp",
+      subtitle = paste0("Beobachtete kumulative Inzidenz | ", n_register,
+                        " Register | N = ",
+                        suppressWarnings(formatC(sum(desk_fb$n_gesamt), format = "d", big.mark = ".")),
+                        " Patientinnen"),
+      x        = "Molekularer Subtyp",
+      caption  = paste0("Hinweis: Poisson-Trendmodell bei Einzelregister nach DSGVO-Suppression nicht schätzbar",
+                        " | HKR-KIKA Multi-Register")
+    ) +
+    theme_hkr() +
+    theme(axis.text.x = element_text(angle = 15, hjust = 1, size = 11))
 
-  save_png(p_trend, "MULTI_Fig4_Poisson_Trend.png", breite = 11, hoehe = 7)
+  save_png(p_trend, "MULTI_Fig4_Poisson_Trend.png", breite = 9, hoehe = 6)
 })
 
 # ============================================================
