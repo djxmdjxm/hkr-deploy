@@ -515,9 +515,143 @@ for (s in schritte) {
 }
 
 # ============================================================
+# FOLIE 9: SYSTEM-ARCHITEKTUR (ggplot-Diagramm eingebettet)
+# ============================================================
+if (!require("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+library(ggplot2)
+
+arch_png = tempfile(fileext = ".png")
+
+arch_p = local({
+  boxes = data.frame(
+    xmin  = c(0.75, 2.5,  5.9,   0.05, 3.15, 6.35,  0.05),
+    xmax  = c(2.4,  5.8,  9.95,  3.05, 6.25, 9.95,  9.95),
+    ymin  = c(5.85, 5.85, 5.85,  3.15, 3.15, 3.15,  0.65),
+    ymax  = c(7.35, 7.35, 7.35,  4.65, 4.65, 4.65,  2.25),
+    label = c("ingress", "krebs-web", "krebs-api",
+              "job-queue", "import-worker", "central-db",
+              "krebs-code"),
+    sub   = c("nginx\nPort 8090 → 80",
+              "Next.js 15 / React 19\nTypeScript / Tailwind 4",
+              "FastAPI / Python 3.12\nUpload · Auth · Reports",
+              "Redis\nMessage Queue",
+              "Python 3.12-Alpine\nXSD-Validierung · DB-Import",
+              "PostgreSQL\nmain_db + krebs_db",
+              "RStudio Server · Port 8091   —   R 4.4   —   ggplot2, survival, data.table, metafor, lme4, officer"),
+    fill  = c("#546E7A", "#005CA9", "#003063",
+              "#E65100", "#37474F", "#4E342E",
+              "#B71C1C"),
+    stringsAsFactors = FALSE
+  )
+  boxes$xc = (boxes$xmin + boxes$xmax) / 2
+  boxes$yc  = (boxes$ymin + boxes$ymax) / 2
+
+  sl = data.frame(
+    x   = c(5, 5, 5),
+    y   = c(7.9, 5.2, 2.65),
+    txt = c("NUTZER- & FRONTEND-SCHICHT",
+            "BACKEND- & QUEUE-SCHICHT",
+            "ANALYSE-SCHICHT  (direkter DB-Zugriff über krebs-net)")
+  )
+
+  ggplot() +
+    # Zeilen-Hintergrund
+    annotate("rect", xmin = 0, xmax = 10, ymin = 5.55, ymax = 7.65,
+             fill = "#EEF2F5", color = NA) +
+    annotate("rect", xmin = 0, xmax = 10, ymin = 2.85, ymax = 4.95,
+             fill = "#FFF8EC", color = NA) +
+    annotate("rect", xmin = 0, xmax = 10, ymin = 0.35, ymax = 2.55,
+             fill = "#FFF0F0", color = NA) +
+    # Container-Boxen
+    geom_rect(data = boxes,
+              aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = fill),
+              color = "white", linewidth = 0.7) +
+    scale_fill_identity() +
+    # Container-Namen
+    geom_text(data = boxes, aes(x = xc, y = yc + 0.40, label = label),
+              color = "white", fontface = "bold", size = 3.6, hjust = 0.5) +
+    # Sub-Labels
+    geom_text(data = boxes, aes(x = xc, y = yc - 0.22, label = sub),
+              color = "#E0E0E0", size = 2.35, hjust = 0.5, lineheight = 0.88) +
+    # Schicht-Labels
+    geom_text(data = sl, aes(x = x, y = y, label = txt),
+              color = "#607D8B", size = 2.4, fontface = "bold", hjust = 0.5) +
+    # Pfeile: Browser -> ingress
+    annotate("text", x = 0.1, y = 6.6, label = "Browser\n►",
+             hjust = 0, size = 2.0, color = "#607D8B", lineheight = 0.8) +
+    annotate("segment", x = 0.72, xend = 0.74, y = 6.6, yend = 6.6,
+             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+             color = "#90A4AE", linewidth = 0.7) +
+    # ingress -> krebs-web
+    annotate("segment", x = 2.41, xend = 2.49, y = 6.6, yend = 6.6,
+             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+             color = "#90A4AE", linewidth = 0.7) +
+    # krebs-web <-> krebs-api
+    annotate("segment", x = 5.82, xend = 5.88, y = 6.6, yend = 6.6,
+             arrow = arrow(length = unit(0.18, "cm"), type = "closed", ends = "both"),
+             color = "#90A4AE", linewidth = 0.7) +
+    # krebs-api -> job-queue (Upload-Job einreihen, diagonal gestrichelt)
+    annotate("segment", x = 6.5, xend = 3.0, y = 5.85, yend = 4.65,
+             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+             color = "#90A4AE", linewidth = 0.55, linetype = "dashed") +
+    # krebs-api -> central-db (direkt)
+    annotate("segment", x = 8.15, xend = 8.15, y = 5.85, yend = 4.65,
+             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+             color = "#90A4AE", linewidth = 0.7) +
+    # job-queue -> import-worker
+    annotate("segment", x = 3.06, xend = 3.13, y = 3.9, yend = 3.9,
+             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+             color = "#90A4AE", linewidth = 0.7) +
+    # import-worker -> central-db
+    annotate("segment", x = 6.26, xend = 6.33, y = 3.9, yend = 3.9,
+             arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+             color = "#90A4AE", linewidth = 0.7) +
+    # krebs-code <-> central-db (Analyse, doppelt)
+    annotate("segment", x = 8.15, xend = 8.15, y = 2.25, yend = 3.15,
+             arrow = arrow(length = unit(0.18, "cm"), type = "closed", ends = "both"),
+             color = "#E57373", linewidth = 0.8) +
+    # Pfeil-Labels
+    annotate("text", x = 4.8, y = 5.4, label = "Job\nenqueue",
+             size = 1.9, color = "#90A4AE", hjust = 0.5, lineheight = 0.8) +
+    annotate("text", x = 8.5, y = 5.25, label = "R/W",
+             size = 2.0, color = "#90A4AE", hjust = 0) +
+    annotate("text", x = 8.5, y = 2.7, label = "Analyse\n(R/W)",
+             size = 2.0, color = "#E57373", hjust = 0, lineheight = 0.85) +
+    # Footer
+    annotate("text", x = 5, y = 0.12,
+             label = paste0("Docker-Netzwerk krebs-net  ·  Volumes: krebs-db (DB-Daten),",
+                            " upload-data (XML-Uploads)  ·  Migrationen: krebs-db-migrations",
+                            " + main-db-migrations (restart: no)"),
+             size = 1.8, color = "#9E9E9E", hjust = 0.5) +
+    xlim(0, 10) + ylim(0, 8.3) +
+    theme_void() +
+    theme(plot.background = element_rect(fill = "white", color = NA),
+          plot.margin = margin(4, 6, 2, 6))
+})
+
+ggsave(arch_png, arch_p, width = 9.4, height = 5.5, dpi = 200, bg = "white")
+
+prs = neue_folie(prs)
+
+prs = ph_with(prs,
+  value = fmt_titel("KIKA — System-Architektur (9 Container)"),
+  location = ph_location(left = 0.5, top = 0.25, width = 9, height = 0.6))
+
+prs = ph_with(prs,
+  value = external_img(arch_png, width = 9.4, height = 5.5),
+  location = ph_location(left = 0.3, top = 0.95, width = 9.4, height = 5.5))
+
+prs = ph_with(prs,
+  value = fpar(
+    ftext("Alle Container laufen auf ubuntu-ai (192.168.2.7 / LAN) via Docker Compose — Projekt: hkr-clean",
+          fp_text(font.size = 10, color = HH_DUNKELGRAU, font.family = FONT_TEXT))
+  ),
+  location = ph_location(left = 0.3, top = 6.55, width = 9.4, height = 0.35))
+
+# ============================================================
 # SPEICHERN
 # ============================================================
 output_datei = "MULTI_Federated_Prozess.pptx"
 print(prs, target = output_datei)
 cat("\nPraesentationsdatei gespeichert:", output_datei, "\n")
-cat("Folien: 8 | Format: Widescreen 10x7.5 inch\n")
+cat("Folien: 9 | Format: Widescreen 10x7.5 inch\n")
